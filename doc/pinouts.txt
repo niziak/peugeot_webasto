@@ -1,0 +1,7 @@
+Arduino Nano (ATmega328P)
+
+ PD0 - RX	D0
+ PD1 - TX	D1
+ PB5 - SCK - 	D13 onboard LED
+ PB0 - ICP -	D8 - capturing pulses from turning light
+
