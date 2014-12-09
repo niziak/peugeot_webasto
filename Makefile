@@ -116,6 +116,8 @@ EXTRAINCDIRS = 	lib \
 # List C source files here. (C dependencies are automatically generated.)
 SRC = 	$(TARGET).c
 
+SRC+= turning_light.c
+
 # List C++ source files here. (C dependencies are automatically generated.)
 CPPSRC = 
 

@@ -5,7 +5,8 @@ Turn on you auxilary heater using original remote control.
 Designed for Peugeot 807 with Webasto Thermo Top C heater (with water pump).
 
 
-After long pressing [LOCK] key on remote, car starts sequence of fast blinks of turning light without unlocking the car.
+After long pressing [LOCK] key on remote, car starts "locating the vehicle" sequence by fast blinking
+ of turning light without unlocking the car.
 Device is connected to front right turning light and is waiting for this seqence.
 When sequence is detected and outside temperature is below 5 Celsius degrees, Webasto heater will be turned on for 30 minutes.
 
