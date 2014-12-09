@@ -38,6 +38,16 @@
 # To rebuild project do "make clean" then "make all".
 #----------------------------------------------------------------------------
 
+ifeq ($(OS),Windows_NT)
+    OS := WIN
+else
+    UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Linux)
+	OS := LINUX
+    endif
+endif
+
+ifeq ($(OS),WIN)
 #
 # !!!  must ends with backslash and NO SPACE AND END !!!
 #
@@ -59,8 +69,15 @@ GCC_AVR_SIZE_DIR_PREFIX := tools_win32/
 
 export PATH:=$(patsubst %\,%,$(POSIX_UTILS_DIR_PREFIX));$(PATH)
 
-#JOBS := 8
 JOBS ?= $(NUMBER_OF_PROCESSORS) 
+
+endif
+
+ifeq ($(OS),LINUX)
+JOBS ?= $(shell nproc)
+endif
+
+#JOBS := 8
 
 #MCU = atmega8
 MCU = atmega328p
@@ -97,63 +114,7 @@ EXTRAINCDIRS = 	lib \
 
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC = 	$(TARGET).c \
-		pulsegen.c \
-		log.c \
-		timer0.c \
-		rtc.c \
-		tools.c \
-		usart0.c \
-		texts.c \
-		logic.c \
-		globals.c 
-		
-SRC+=	lib/key/key_adc.c \
-		lib/key/key_buttons.c \
-		lib/key/key_serial.c		
-
-SRC+=	lib/1wire/1wire_low.c \
-		lib/1wire/1wire.c 
-
-#SRC+= lib/lcd_radzio/HD44780.c lib/lcd_radzio/bufferedLcd.c 
-#SRC+= lib/lcd_pfleury/lcd.c
-SRC+= lib/lcd_alank2/hd44780.c
-
-SRC+= lib/lcd_buff/lcd_buff.c
-
-SRC+= lib/i2cmaster/twimaster.c
-#ASRC+=	lib/i2cmaster/i2cmaster.S
-
-
-SRC+= lib/hal_lcd.c
-
-SRC+= lib/nvm.c
-SRC+= lib/events.c 
-SRC+= lib/dcf77.c
-
-
-SRC+=	app/app.c
-
-SRC+=	app/menu/app_menu_def.c \
-		app/menu/app_menu.c \
-		app/menu/app_menu_fn.c \
-		app/menu/app_menu_confirm.c \
-		app/menu/app_menu_nav.c \
-		app/menu/app_menu_display.c \
-		app/menu/app_menu_special.c
-
-SRC+=   app/status/app_status.c \
-		app/status/app_status_msg.c
-
-SRC+=   app/clock/app_clock_handler.c
-SRC+=   app/clock/app_clock_display.c
-
-SRC+=   app/list/app_list_handler.c
-SRC+=   app/list/app_list_display.c
-
-SRC+=   app/editor/app_edit_handler.c
-SRC+=   app/editor/app_edit_display.c
-
+SRC = 	$(TARGET).c
 
 # List C++ source files here. (C dependencies are automatically generated.)
 CPPSRC = 
@@ -368,8 +329,13 @@ LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 AVRDUDE_PROGRAMMER = arduino
 
 # com1 = serial port. Use lpt1 to connect to parallel port.
-#AVRDUDE_PORT = usb
-AVRDUDE_PORT = COM3
+ifeq ($(OS),WIN)
+    #AVRDUDE_PORT = usb
+    AVRDUDE_PORT = COM3
+endif
+ifeq ($(OS),LINUX)
+    AVRDUDE_PORT = /dev/ttyUSB0
+endif
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(OUTDIR)/$(TARGET).hex
 #AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
@@ -392,7 +358,7 @@ AVRDUDE_WRITE_FLASH = -U flash:w:$(OUTDIR)/$(TARGET).hex
 # needed for arduino
 AVRDUDE_NO_AUTOERASE = -D
 
-AVRDUDE_CONF  = tools_win32\avrdude.conf
+AVRDUDE_CONF  = tools_win32/avrdude.conf
 
 AVRDUDE_FLAGS = $(AVRDUDE_CONF)  
 AVRDUDE_FLAGS += -p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER) -b 57600
@@ -443,7 +409,13 @@ OBJDUMP = $(GCC_BIN_DIR_PREFIX)avr-objdump
 SIZE = $(GCC_AVR_SIZE_DIR_PREFIX)avr-size
 AR = $(GCC_BIN_DIR_PREFIX)avr-ar rcs
 NM = $(GCC_BIN_DIR_PREFIX)avr-nm
+ifeq ($(OS),WIN)
 AVRDUDE = tools_win32/avrdude.exe
+endif
+ifeq ($(OS),LINUX)
+AVRDUDE = avrdude
+endif
+
 REMOVE = $(POSIX_UTILS_DIR_PREFIX)rm -f
 REMOVEDIR = $(POSIX_UTILS_DIR_PREFIX)rm -rf
 COPY = $(POSIX_UTILS_DIR_PREFIX)cp
