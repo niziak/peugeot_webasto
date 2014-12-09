@@ -1,0 +1,18 @@
+Peugeot Webast
+==============
+Turn on you auxilary heater using original remote control.
+
+Designed for Peugeot 807 with Webasto Thermo Top C heater (with water pump).
+
+
+After long pressing [LOCK] key on remote, car starts sequence of fast blinks of turning light without unlocking the car.
+Device is connected to front right turning light and is waiting for this seqence.
+When sequence is detected and outside temperature is below 5 Celsius degrees, Webasto heater will be turned on for 30 minutes.
+
+TODO:
+ - How we can blink to inform user about some actions??? Shorting to +12V can be dangerous for BSM?
+ - Temperature measurements (Dallas 1wire or NTC ?)
+ - Turning on webasto by shorting line to ground. Is it safe for ECU (Delphi DCM3.5)?
+   - possible solution: relay between ECU and ground. But some rumors says that 
+     even short breaks with grounding this signal will shut off webasto and start again.
+ 
