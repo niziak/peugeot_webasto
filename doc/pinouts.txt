@@ -1,7 +1,67 @@
-Arduino Nano (ATmega328P)
-
- PD0 - RX	D0
- PD1 - TX	D1
- PB5 - SCK - 	D13 onboard LED
- PB0 - ICP -	D8 - capturing pulses from turning light
+/**
+ *
+ * ====================
+ * === ARDUINO NANO ===
+ * ====================
+ * +--- arduino pins-------------------------------------------------------------------------------------------------------------------+
+ * |                                                  ATMEGA 328p                                                                      |
+ * |                                                                                                                                   |
+ * |                      PCINT14 / RESETn        PC6    1 ###    ### 28  PC5 ADC5 /SCL / PCINT13                                      A5
+ * D0                  ---PCINT16 / RXD           PD0    2 ###    ### 27  PC4 ADC4 /SDA / PCINT12                                      A4
+ * D1                  ---PCINT17 / TXD           PD1    3 ########## 26  PC3 ADC3 / PCINT11                                           A3
+ * D2            ---------PCINT18 / INT0          PD2    4 ####M##### 25  PC2 ADC2 / PCINT10                                           A2
+ * D3                     PCINT19 / OC2B  / INT1  PD3    5 ####E##### 24  PC1 ADC1 / PCINT9                                            A1
+ * D4             --------PCINT20 / XCK   / T0    PD4    6 ####G##### 23  PC0 ADC0 / PCINT8
+ *                                                VCC    7 ####A##### 22  GND
+ *                                                GND    8 #### ##### 21  AREF --||-- 100nF
+ *                --------PCINT6  / XTAL1 / TOSC1 PB6    9 ####3##### 20  AVCC
+ *                --------PCINT7  / XTAL2 / TOSC2 PB7   10 ####2##### 19  PB5 SCK  / PCINT5------------Arduino Nano LED----------------D13
+ * D5             --------PCINT21 / OC0B  / T1    PD5   11 ####8##### 18  PB4 MISO / PCINT4                                            D12
+ * D6             --------PCINT22 / OC0A  / AIN0  PD6   12 ####p##### 17  PB3 MOSI / OC2A / PCINT3                                     D11
+ * D7             --------PCINT23 / AIN1          PD7   13 ########## 16  PB2 SSn  / OC1B / PCINT2-----                                D10
+ * D8---Turning light-----PCINT0  / CLK0  / ICP1  PB0   14 ########## 15  PB1        OC1A / PCINT1-----                                D9
+*/ 
+ 
+/**
+ * ======================
+ * === ARDUINO UNO R3 ===
+ * ======================
+ * +--- arduino pins-------------------------------------------------------------------------------------------------------------------+
+ * |                                                  ATMEGA 328p                                                                      |
+ * |                                                                                                                                   |
+ * |                 PCINT14 / RESETn        PC6    1 ###    ### 28  PC5 ADC5 /SCL / PCINT13----------RTC I2C SCL----------------------A5
+ * D0             ---PCINT16 / RXD           PD0    2 ###    ### 27  PC4 ADC4 /SDA / PCINT12----------RTC I2C SDA----------------------A4
+ * D1             ---PCINT17 / TXD           PD1    3 ########## 26  PC3 ADC3 / PCINT11---------------DS 1wire-------------------------A3
+ * D2 PIR (NO)-------PCINT18 / INT0          PD2    4 ####M##### 25  PC2 ADC2 / PCINT10---------------PK Pompa-------------------------A2
+ * D3                PCINT19 / OC2B  / INT1  PD3    5 ####E##### 24  PC1 ADC1 / PCINT9----------------DCF77----------------------------A1 (pull up)
+ * D4 LCD D4---------PCINT20 / XCK   / T0    PD4    6 ####G##### 23  PC0 ADC0 / PCINT8----------------ADC KEYBOARD---------------------N/A
+ *                                           VCC    7 ####A##### 22  GND
+ *                                           GND    8 #### ##### 21  AREF --||-- 100nF
+ *          ---------PCINT6  / XTAL1 / TOSC1 PB6    9 ####3##### 20  AVCC
+ *          ---------PCINT7  / XTAL2 / TOSC2 PB7   10 ####2##### 19  PB5 SCK  / PCINT5----------------LED Yellow on arduino board      D13
+ * D5 LCD D5---------PCINT21 / OC0B  / T1    PD5   11 ####8##### 18  PB4 MISO / PCINT4                                                 D12
+ * D6 LCD D6---------PCINT22 / OC0A  / AIN0  PD6   12 ####p##### 17  PB3 MOSI / OC2A / PCINT3                                          D11
+ * D7 LCD D7---------PCINT23 / AIN1          PD7   13 ########## 16  PB2 SSn  / OC1B / PCINT2---------LCD LED (backlight)              D10
+ * D8 LCD RS---------PCINT0  / CLK0  / ICP1  PB0   14 ########## 15  PB1        OC1A / PCINT1---------LCD E                            D9
+*/ 
+ 
+ 
+/**
+ *                                     ATMEGA 8
+ *
+ *                 RESETn     PC6    1 ###  ### 28  PC5 ADC5/SCL-----LCD RW
+ *                   RXD      PD0    2 ######## 27  PC4 ADC4/SDA-----LCD EN
+ *                   TXD      PD1    3 ######## 26  PC3 ADC3---------LCD D4
+ * LCD RS-----------INT0      PD2    4 ###M#### 25  PC2 ADC2---------LCD D5
+ *                  INT1      PD3    5 ###E#### 24  PC1 ADC1---------LCD D6
+ *                 XCK T0     PD4    6 ###G#### 23  PC0 ADC0---------LCD D7
+ *                            VCC    7 ###A#### 22  GND
+ *                            GND    8 ### #### 21  AREF ---||--- 100nF capacitor to GND
+ *               XTAL1/TOSC1  PB6    9 ###8#### 20  AVCC
+ *               XTAL2/TOSC2  PB7   10 ######## 19  PB5 (SCK)
+ * 1wire-------------T1       PD5   11 ######## 18  PB4 (MISO) -------MOSFET ON/OFF
+ *                  AIN0      PD6   12 ######## 17  PB3 (MOSI) OC2----MOSFET PWM
+ *                  AIN1      PD7   13 ######## 16  PB2 (SSn)  OC1B---BTN NEXT
+ *                  ICP1      PB0   14 ######## 15  PB1        OC1A---BTN OK/MENU
+*/
 

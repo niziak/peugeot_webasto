@@ -39,43 +39,16 @@
 #----------------------------------------------------------------------------
 
 ifeq ($(OS),Windows_NT)
-    OS := WIN
+  include Makefile.win
 else
-    UNAME_S := $(shell uname -s)
-    ifeq ($(UNAME_S),Linux)
-	OS := LINUX
-    endif
+  UNAME_S := $(shell uname -s)
+  ifeq ($(UNAME_S),Linux)
+    include Makefile.linux
+  else
+    $(error Unsupported OS: $(OS))
+  endif
 endif
 
-ifeq ($(OS),WIN)
-#
-# !!!  must ends with backslash and NO SPACE AND END !!!
-#
-#GCC_BIN_DIR_PREFIX := n:/tools/WinAVR/bin/
-#POSIX_UTILS_DIR_PREFIX : = n:/tools/WinAVR/utils/bin/
-
-#GCC_BIN_DIR_PREFIX := n:/tools/avrgcc/bin/
-POSIX_UTILS_DIR_PREFIX := n:/tools/WinAVR/utils/bin/
-
-#GCC_BIN_DIR_PREFIX := n:/Arduino/hardware/tools/avr/bin/
-#POSIX_UTILS_DIR_PREFIX : = n:/Arduino/hardware/tools/avr/utils/bin/
-
-GCC_BIN_DIR_PREFIX := n:/tools/avr-gcc-4.8_2013-03-06_mingw32/bin/
-#POSIX_UTILS_DIR_PREFIX : = n:/tools/avr-gcc-4.8_2013-03-06_mingw32/utils/bin/
-
-#POSIX_UTILS_DIR_PREFIX := n:/tools/msys/bin/
-
-GCC_AVR_SIZE_DIR_PREFIX := tools_win32/
-
-export PATH:=$(patsubst %\,%,$(POSIX_UTILS_DIR_PREFIX));$(PATH)
-
-JOBS ?= $(NUMBER_OF_PROCESSORS) 
-
-endif
-
-ifeq ($(OS),LINUX)
-JOBS ?= $(shell nproc)
-endif
 
 #JOBS := 8
 
@@ -110,8 +83,6 @@ EXTRAINCDIRS = 	lib \
 				app/status \
 				app/list
 				
-#lib/lcd_radzio lib/lcd_pfleury
-
 
 # List C source files here. (C dependencies are automatically generated.)
 SRC = 	$(TARGET).c
@@ -331,13 +302,8 @@ LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 AVRDUDE_PROGRAMMER = arduino
 
 # com1 = serial port. Use lpt1 to connect to parallel port.
-ifeq ($(OS),WIN)
     #AVRDUDE_PORT = usb
-    AVRDUDE_PORT = COM3
-endif
-ifeq ($(OS),LINUX)
-    AVRDUDE_PORT = /dev/ttyUSB0
-endif
+    #AVRDUDE_PORT = COM3
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(OUTDIR)/$(TARGET).hex
 #AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
@@ -411,12 +377,6 @@ OBJDUMP = $(GCC_BIN_DIR_PREFIX)avr-objdump
 SIZE = $(GCC_AVR_SIZE_DIR_PREFIX)avr-size
 AR = $(GCC_BIN_DIR_PREFIX)avr-ar rcs
 NM = $(GCC_BIN_DIR_PREFIX)avr-nm
-ifeq ($(OS),WIN)
-AVRDUDE = tools_win32/avrdude.exe
-endif
-ifeq ($(OS),LINUX)
-AVRDUDE = avrdude
-endif
 
 REMOVE = $(POSIX_UTILS_DIR_PREFIX)rm -f
 REMOVEDIR = $(POSIX_UTILS_DIR_PREFIX)rm -rf
