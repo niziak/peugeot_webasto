@@ -1,5 +1,5 @@
 #----------------------------------------------------------------------------
-# WinAVR Makefile Template written by Eric B. Weddington, Jörg Wunsch, et al.
+# WinAVR Makefile Template written by Eric B. Weddington, Jï¿½rg Wunsch, et al.
 #
 # Released to the Public Domain
 #
@@ -72,22 +72,16 @@ OUTDIR = out
 #     Each directory must be seperated by a space.
 #     Use forward slashes for directory separators.
 #     For a directory that has spaces, enclose it in quotes.
-EXTRAINCDIRS = 	lib \
-				lib/key \
-				lib/i2cmaster \
-				lib/1wire \
-				lib/lcd_buff \
-				app \
-				app/menu \
-				app/clock \
-				app/status \
-				app/list
-				
+EXTRAINCDIRS = 	lib 
+
 
 # List C source files here. (C dependencies are automatically generated.)
 SRC = 	$(TARGET).c
 
 SRC+= turning_light.c
+SRC+= usart0.c
+SRC+= log.c
+SRC+= lib/events.c
 
 # List C++ source files here. (C dependencies are automatically generated.)
 CPPSRC = 
@@ -514,6 +508,9 @@ objdump:
 program:
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
 
+terminal:
+	tools/serial_console.sh
+	
 # Generate avr-gdb config/init file which does the following:
 #     define the reset signal, load the target file, connect to target, and set 
 #     a breakpoint at main().

@@ -1,2 +1,6 @@
 /out/
 /sizebefore.txt
+*putty.log
+/.settings
+/.cproject
+/.project
