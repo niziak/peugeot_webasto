@@ -3,5 +3,6 @@
 
 extern void SimulateTurningLight (const unsigned int uiSpreadMs);
 extern void SimulateLocatingVehicle (const unsigned int uiSpreadMs);
+extern void SimulationLoop(void);
 
 #endif

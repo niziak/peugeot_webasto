@@ -36,3 +36,15 @@ void SimulateLocatingVehicle (const unsigned int uiSpreadMs)
 	}
 }
 
+
+void SimulationLoop(void)  __attribute__ ((noreturn));
+void SimulationLoop(void)
+{
+	while (1)
+	{
+		SimulateTurningLight(0);
+		_delay_ms(5000);
+		SimulateLocatingVehicle(0);
+		_delay_ms(5000);
+	}
+}
