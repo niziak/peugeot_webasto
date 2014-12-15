@@ -296,8 +296,8 @@ LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 AVRDUDE_PROGRAMMER = arduino
 
 # com1 = serial port. Use lpt1 to connect to parallel port.
-    #AVRDUDE_PORT = usb
-    #AVRDUDE_PORT = COM3
+#AVRDUDE_PORT = usb
+#AVRDUDE_PORT = COM3
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(OUTDIR)/$(TARGET).hex
 #AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
@@ -323,7 +323,7 @@ AVRDUDE_NO_AUTOERASE = -D
 AVRDUDE_CONF  = tools_win32/avrdude.conf
 
 AVRDUDE_FLAGS = $(AVRDUDE_CONF)  
-AVRDUDE_FLAGS += -p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER) -b 57600
+AVRDUDE_FLAGS += -p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER) -b 115200
 AVRDUDE_FLAGS += $(AVRDUDE_NO_VERIFY)
 AVRDUDE_FLAGS += $(AVRDUDE_VERBOSE)
 AVRDUDE_FLAGS += $(AVRDUDE_ERASE_COUNTER)
@@ -510,7 +510,12 @@ program:
 
 terminal:
 	tools/serial_console.sh
-	
+
+# lock 0x3f - no locks
+# lock 0x0f - boot loader protection mode 3 LPM and SPM prohibited in bootloader
+program_boot:
+	$(AVRDUDE) $(AVRDUDE_CONF) -v -c usbasp -y -p atmega328p -U flash:w:tools/bootloaders/optiboot_atmega328.hex:i -U lfuse:w:0xFF:m -U hfuse:w:0xDE:m -U efuse:w:0x05:m -U lock:w:0x3F:m
+
 # Generate avr-gdb config/init file which does the following:
 #     define the reset signal, load the target file, connect to target, and set 
 #     a breakpoint at main().

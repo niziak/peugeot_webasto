@@ -1,6 +1,6 @@
 #!/bin/sh
 DATE=`date "+%Y%m%d_%H%M%S"`
-putty -sercfg 8,1,57600,n,N -log ${DATE}_putty.log -serial /dev/ttyUSB0
+putty -sercfg 8,1,115200,n,N -log ${DATE}_putty.log -serial /dev/ttyUSB0
 exit 0
 
    -sercfg configuration-string

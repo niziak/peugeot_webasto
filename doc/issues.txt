@@ -1,0 +1,38 @@
+=======================================================================================
+Arduino Nano d13 led blinking
+=======================================================================================
+After watchdog reset, device goes into unfinished loop of blinking led. 
+Reset from button doesn't help. Only power off forces device to reboot corretly.
+
+Arduino bootloader is buggy, please reflash bootloader with Optibot
+
+
+
+
+=======================================================================================
+avrdude: Warning: cannot query manufacturer for device: error sending control message: Operation not permitted
+avrdude: Warning: cannot query product for device: error sending control message: Operation not permitted
+avrdude: error: could not find USB device with vid=0x16c0 pid=0x5dc vendor='www.fischl.de' product='USBasp'
+
+avrdude done.  Thank you.
+=======================================================================================
+1. Create new rule for udev
+
+Code: Select all
+    sudo gedit /etc/udev/rules.d/60-objdev.rules
+
+
+2. Edit new rule in gedit and add following:
+
+Code: Select all
+       SUBSYSTEM!="usb_device", ACTION!="add", GOTO="objdev_rules_end"
+       # USBasp
+       ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05dc", GROUP="users", MODE="666"
+       LABEL="objdev_rules_end"
+
+
+3. Restart udev.
+
+Code: Select all
+       sudo /etc/init.d/udev restart
+       

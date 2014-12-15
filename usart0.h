@@ -12,7 +12,7 @@
 #error "Please define F_CPU"
 #endif
 
-#define USART0_BAUD             57600
+#define USART0_BAUD             115200
 
 //#define USART0_UBBR_VAL         ( (F_CPU) / (16UL * (USART0_BAUD)) - 1 )  // = 7,6
 //#define USART0_UBBR_VAL         8   // 16Mhz clock  115200  -3,5 error

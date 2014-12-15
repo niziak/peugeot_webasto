@@ -31,9 +31,9 @@ void main(void)
 	for (;;)
 	{
 		wdt_reset();
-	    set_sleep_mode (SLEEP_MODE_IDLE); // wait for int
-	    sleep_mode();
-		USART0_vSendByte (USART0_ucGetByte());
+//    		set_sleep_mode (SLEEP_MODE_IDLE); // wait for int
+//	    sleep_mode();
+	    USART0_vSendByte (USART0_ucGetByte());
 	    LOG_P(PSTR(" Woked up!\n"));
 	    //_delay_ms(1000);
 	}
