@@ -4,6 +4,7 @@
  *  Created on: Sep 17, 2013
  *      Author: nizinski_w
  */
+#include <util/delay.h>
 #include <config.h>
 
 static volatile BOOL bStop;

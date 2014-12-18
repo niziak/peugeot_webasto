@@ -20,7 +20,7 @@
 
 #else
 
-    #error "CPU";
+    #error "F_CPU not valid!";
 
 #endif
 

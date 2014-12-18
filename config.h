@@ -6,3 +6,6 @@
 #define ARDUINO_LED_ON		{ PORTB |=  _BV(PB5); }
 #define ARDUINO_LED_OFF		{ PORTB &= ~_BV(PB5); }
 #define ARDUINO_LED_ALTER	{ PORTB ^=  _BV(PB5); }
+
+
+#define TIMER0_ISR_EVERY_US	1000

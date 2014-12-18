@@ -31,6 +31,8 @@ typedef enum
 
     SYS_CLOCK_1S,              ///< every one second
 
+    SYS_EXTINT,					///< external interrupt
+
     SYS_1WIRE_CONVERT,
     SYS_1WIRE_READ,
 
@@ -60,7 +62,7 @@ typedef enum
     APP_KILLED,                 ///< inform application that it was killed - to clean internal structures
     APP_LOST_CONTROL,           ///< inform application that it is not anymore foreground application (loosing focus)
 
-#if WITH_HB_EVENT
+#if (WITH_HB_EVENT)
     SYS_HEARTBEAT,
 #endif
 

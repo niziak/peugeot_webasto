@@ -222,3 +222,4 @@ void EventInit(void)
     ptdFifo->bEmpty=0;
     memset (ptdFifo->aeCurrentEvent, SYS_EVENT_NONE, sizeof(ptdFifo->aeCurrentEvent));
 }
+

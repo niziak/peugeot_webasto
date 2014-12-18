@@ -80,7 +80,11 @@ SRC = 	$(TARGET).c
 
 SRC+= turning_light.c
 SRC+= usart0.c
+SRC+= timer0.c
 SRC+= log.c
+SRC+= globals.c
+SRC+= tools.c
+
 SRC+= lib/events.c
 
 # List C++ source files here. (C dependencies are automatically generated.)

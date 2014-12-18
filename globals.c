@@ -7,13 +7,18 @@
 
 #include "config.h"
 #include "types.h"
+#include <avr/pgmspace.h>
 
+volatile unsigned long      ulSystemTickMS = 0;         ///< local time tick counter (increment every ms)
+volatile unsigned long      ulSystemTickS = 0;          ///< local time tick counter (increment every second)
+
+#if 0
 OW_NEW_DEVICE_DEF           atdNewTempSensors  [NUM_OF_TEMP_SENSORS];
 TEMP_SENSOR_PARAMS_DEF      atdKnownTempSensors[NUM_OF_TEMP_SENSORS];
 INT                         aiPreviousTemp     [NUM_OF_TEMP_SENSORS];   ///< store integer part of previous value
 
-volatile unsigned long      ulSystemTickMS = 0;         ///< local time tick counter (increment every ms)
-volatile unsigned long      ulSystemTickS = 0;          ///< local time tick counter (increment every second)
+
+
 
 volatile BOOL               bBlinkState;                ///< alternating variable to control blinking characters
 volatile BOOL               bNeedsBlinking;             ///< flag to turn on blinking flag
@@ -31,10 +36,13 @@ volatile unsigned int       uiPIRTTL;                   ///< >0 if presence was 
 #endif
 NVM_SET_DEF                 stSettings;
 
-const CHAR copyright[] PROGMEM = "\
-Copyright (C) 2013-2014 Wojciech Nizinski. All rights reserved. \
+#endif
+
+const char copyright[] PROGMEM = "\
+Copyright (C) 2013-2015 Wojciech Nizinski. All rights reserved. \
 You can use this work only for reference. \
-No part of this work may be redistributed or modified in any form or any means (source, binary, others) without prior written permission from Wojciech Nizinski\n";
+No part of this work may be redistributed or modified in any form or any means (source, binary, others) \
+without prior written permission from Wojciech Nizinski\n";
 
 
 

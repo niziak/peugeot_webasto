@@ -9,14 +9,11 @@
 #include <avr/io.h>
 
 #include <config.h>
-#include <timer0.h>
+#include "globals.h"
 #include <events.h>
-#include <rtc.h>
-#include <key.h>
-#include <hal_lcd.h>
-#if (WITH_DCF77_SUPPORT)
-#include <dcf77.h>
-#endif
+#include "log.h"
+#include "timer0.h"
+
 
 #define WITH_INT_OVERLAP_DETECTION      TRUE
 
@@ -46,51 +43,36 @@ ISR(TIMER0_OVF_vect)
     ulSystemTickMS += (TIMER0_ISR_EVERY_US/1000);
 
     EventTimerTickEveryMS();
-    #if (WITH_DCF77_SUPPORT)
-        DCFTask();
-    #endif
+
     // ONE SECOND TICK
     if ((ulSystemTickMS % 1000) == 0)
     {
         ulSystemTickS++;
-        if (ucUIInactiveCounter>0)
-        {
-            ucUIInactiveCounter--;
-            if (ucUIInactiveCounter==0)
-            {
-                EventPostFromIRQ (SYS_UI_TIMEOUT);
-            }
-        }
+//        if (ucUIInactiveCounter>0)
+//        {
+//            ucUIInactiveCounter--;
+//            if (ucUIInactiveCounter==0)
+//            {
+//                EventPostFromIRQ (SYS_UI_TIMEOUT);
+//            }
+//        }
 
-        if (uiPIRTTL>0)
-        {
-            uiPIRTTL--;
-        }
-        if (uiPumpSwitchOffAfter>0)
-        {
-            uiPumpSwitchOffAfter--;
-            if (0 == uiPumpSwitchOffAfter)  // turn off pump only once
-            {
-                bPumpIsRunning = FALSE;
-            }
-        }
+//        if (uiPIRTTL>0)
+//        {
+//            uiPIRTTL--;
+//        }
+//        if (uiPumpSwitchOffAfter>0)
+//        {
+//            uiPumpSwitchOffAfter--;
+//            if (0 == uiPumpSwitchOffAfter)  // turn off pump only once
+//            {
+//                bPumpIsRunning = FALSE;
+//            }
+//        }
 
         EventPostFromIRQ (SYS_CLOCK_1S); // do not enable, it is too fast for main loop to handle
-#if (WITH_HB_EVENT)
-        EventPostFromIRQ (SYS_HEARTBEAT);
-#endif
     }
 
-
-    if (TRUE == bNeedsBlinking)
-    {
-        if (ulSystemTickMS % (BLINK_SPEED_MS) == 0)
-        {
-            bBlinkState = (bBlinkState==0 ? 1 : 0);
-            //DISP_REFRESH
-            EventPostFromIRQ (DISP_BLINK); // do not enable, it is too fast for main loop to handle
-        }
-    }
 
 #if (KEY_USE_TIMER_TICK)
     if (ulSystemTickMS % (KEY_TIMER_TICK_EVERY_MS) == 0)

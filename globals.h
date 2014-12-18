@@ -8,6 +8,13 @@
 #ifndef GLOBALS_H_
 #define GLOBALS_H_
 
+extern volatile unsigned long       ulSystemTickMS;
+extern volatile unsigned long       ulSystemTickS;
+
+#include <avr/pgmspace.h>
+extern const char copyright[] PROGMEM;
+
+#if 0
 
 /** Structure to keep whole system settings */
 typedef struct
@@ -27,8 +34,8 @@ typedef struct
 extern NVM_SET_DEF                  stSettings;
 #define pstSettings (&(stSettings))
 
-extern volatile unsigned long       ulSystemTickMS;
-extern volatile unsigned long       ulSystemTickS;
+
+
 extern volatile BOOL                bBlinkState;
 extern volatile UCHAR               ucUIInactiveCounter;
 extern volatile unsigned int        uiPumpSwitchOffAfter;
@@ -40,14 +47,13 @@ extern volatile BOOL                bPumpIsRunning;
 extern          long                lCalcTimeOfs;
 #endif
 
-#include <avr/pgmspace.h>
 
-extern const CHAR copyright[] PROGMEM;
 
 #define DISP_REFRESH                { bRefreshDisplay = TRUE;  }
 #define DISP_START_BLINK_TIMER      { bNeedsBlinking  = TRUE;  }
 #define DISP_STOP_BLINK_TIMER       { bNeedsBlinking  = FALSE; }
 
 #define ABS_DIFF(x,y)               ((x)>(y) ? (x) - (y) : (y) - (x))
+#endif
 
 #endif /* GLOBALS_H_ */
