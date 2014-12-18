@@ -32,7 +32,7 @@ typedef enum
     SYS_CLOCK_1S,              ///< every one second
 
     SYS_EXTINT,					///< external interrupt
-
+    SYS_T1INT,
     SYS_1WIRE_CONVERT,
     SYS_1WIRE_READ,
 

@@ -10,6 +10,7 @@
 #include <turning_light.h>
 #include "usart0.h"
 #include "timer0.h"
+#include "timer1.h"
 #include "log.h"
 #include <events.h>
 #include "globals.h"
@@ -48,13 +49,14 @@ void main(void)
     EventInit();
     //wdt_enable(WDTO_2S);
     TIMER_vInit();
+    TIMER1_vInit();
 
     sei(); // start interrupts (timer)
 
 	//SimulationLoop();
 	for (;;)
 	{
-		if (1) {
+		if (0) {
 			LOG_P(PSTR("Waiting for external event (power down)...\n"));
 			_delay_ms(20); //give UART chance to transmit
 			sei();
@@ -93,6 +95,8 @@ void main(void)
 		       }
 		       ARDUINO_LED_OFF
 		}
+		LOG_P(PSTR("%5u %5u - %5u = %5u\n"),  T1Ovs1, Capt1, Capt2, Capt2 - Capt1);
+		_delay_ms(50);
 	    //USART0_vSendByte (USART0_ucGetByte());
 	    //LOG_P(PSTR(" Woked up!\n"));
 	    //_delay_ms(1000);
