@@ -8,8 +8,9 @@
 #ifndef GLOBALS_H_
 #define GLOBALS_H_
 
-extern volatile unsigned long       ulSystemTickMS;
-extern volatile unsigned long       ulSystemTickS;
+extern volatile uint16_t      ulSystemTickMS;
+extern volatile uint16_t      ulSystemTickS;
+extern volatile uint16_t      ulIdleTimeMS;
 
 #include <avr/pgmspace.h>
 extern const char copyright[] PROGMEM;

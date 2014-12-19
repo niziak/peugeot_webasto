@@ -31,9 +31,12 @@ typedef enum
 
     SYS_CLOCK_1S,              ///< every one second
 
-    SYS_EXTINT,					///< external interrupt
+    SYS_PB0_HI,					///< PB0 was changed to HI state
     SYS_T1INT,
-    SYS_1WIRE_CONVERT,
+
+    SYS_CHECK_PULSES,
+    SYS_GO_TO_SLEEP,
+
     SYS_1WIRE_READ,
 
 #if WITH_RTC_DRIFT_MEASURE

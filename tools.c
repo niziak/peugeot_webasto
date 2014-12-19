@@ -5,6 +5,7 @@
  *      Author: nizinski_w
  */
 #include <util/delay.h>
+#include <avr/sleep.h>
 #include <config.h>
 
 static volatile BOOL bStop;
@@ -24,9 +25,10 @@ void breakable_delay_break(void)
 void breakable_delay_ms(unsigned int  __ms)
 {
     bStop = FALSE;
-    while ((bStop==FALSE) && (__ms-->0))
+    while ( (__ms-- > 0) && (bStop==FALSE) )
     {
-        _delay_ms(1);
+    	set_sleep_mode (SLEEP_MODE_IDLE); // wait for int (1ms timer)
+    	sleep_mode();
     }
 }
 

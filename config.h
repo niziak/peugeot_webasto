@@ -8,4 +8,13 @@
 #define ARDUINO_LED_ALTER	{ PORTB ^=  _BV(PB5); }
 
 
-#define TIMER0_ISR_EVERY_US	1000
+#define TIMER1_TICK_US                  64      ///< One T1 count = 64us
+
+#define CHECK_WHEN_NO_PULSES_MS         1500    ///< analyse collected pulses after ms time
+#define IDLE_WHEN_NO_PULSES_MS			3000	///< go to idle when no pulses witin 3 seconds from last pulse
+
+
+#define MAX_PERIODS                     30      ///< how many periods store (positive and negative state lengths)
+
+#define PULSE_LEN_TOLERANCE_MS          20
+

@@ -23,7 +23,7 @@ void SimulateTurningLight (const unsigned int uiSpreadMs)
 }
 
 #define LOCATING_LIGHT_NUM_OF_CYCLES	10
-#define LOCATING_LIGHT_ON_TIME_MS		100
+#define LOCATING_LIGHT_ON_TIME_MS		200
 #define LOCATING_LIGHT_OFF_TIME_MS		100
 void SimulateLocatingVehicle (const unsigned int uiSpreadMs)
 {

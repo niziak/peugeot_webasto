@@ -11,8 +11,7 @@
 extern void TIMER1_vInit(void);
 extern void TIMER1_vStop(void);
 
-extern volatile uint16_t T1Ovs1, T1Ovs2;
-extern volatile uint16_t Capt1, Capt2, Capt3;
+extern volatile uint16_t auiPeriods[];
 
 
 #endif /* TIMER1_H_ */

@@ -103,7 +103,7 @@ void LOG_Reset_P (const char * message)
     unsigned char ucCount;
     printf_P (PSTR("RESET:\n"));
     puts_P (message);
-
+    _delay_ms(100);
     cli(); // TODO
     for (ucCount=100 ; ucCount>0 ; ucCount--)
     {

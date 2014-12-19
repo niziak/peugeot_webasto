@@ -8,9 +8,11 @@
 #include "config.h"
 #include "types.h"
 #include <avr/pgmspace.h>
+#include <stdint.h>
 
-volatile unsigned long      ulSystemTickMS = 0;         ///< local time tick counter (increment every ms)
-volatile unsigned long      ulSystemTickS = 0;          ///< local time tick counter (increment every second)
+volatile uint32_t      ulSystemTickMS = 0;         ///< local time tick counter (increment every ms)
+volatile uint32_t      ulSystemTickS = 0;          ///< local time tick counter (increment every second)
+volatile uint16_t      ulIdleTimeMS = 0;            //TODO use SystemTickMS
 
 #if 0
 OW_NEW_DEVICE_DEF           atdNewTempSensors  [NUM_OF_TEMP_SENSORS];

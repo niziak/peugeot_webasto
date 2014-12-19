@@ -21,5 +21,5 @@ export PATH:=$(patsubst %\,%,$(POSIX_UTILS_DIR_PREFIX));$(PATH)
 
 JOBS ?= $(NUMBER_OF_PROCESSORS) 
 
-AVRDUDE_PORT = COM3
+AVRDUDE_PORT = COM9
 AVRDUDE = tools_win32/avrdude.exe

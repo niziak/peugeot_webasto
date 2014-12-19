@@ -40,39 +40,28 @@ ISR(TIMER0_OVF_vect)
     }
     bInISR = TRUE;
 #endif
-    ulSystemTickMS += (TIMER0_ISR_EVERY_US/1000);
-
+    ulSystemTickMS ++;
+    ulIdleTimeMS   ++;
     EventTimerTickEveryMS();
+
+    switch (ulIdleTimeMS)
+    {
+        case CHECK_WHEN_NO_PULSES_MS:
+            EventPostFromIRQ(SYS_CHECK_PULSES);
+            break;
+
+        case IDLE_WHEN_NO_PULSES_MS:
+            EventPostFromIRQ(SYS_GO_TO_SLEEP);
+            break;
+        default:
+            break;
+    }
 
     // ONE SECOND TICK
     if ((ulSystemTickMS % 1000) == 0)
     {
         ulSystemTickS++;
-//        if (ucUIInactiveCounter>0)
-//        {
-//            ucUIInactiveCounter--;
-//            if (ucUIInactiveCounter==0)
-//            {
-//                EventPostFromIRQ (SYS_UI_TIMEOUT);
-//            }
-//        }
-
-//        if (uiPIRTTL>0)
-//        {
-//            uiPIRTTL--;
-//        }
-//        if (uiPumpSwitchOffAfter>0)
-//        {
-//            uiPumpSwitchOffAfter--;
-//            if (0 == uiPumpSwitchOffAfter)  // turn off pump only once
-//            {
-//                bPumpIsRunning = FALSE;
-//            }
-//        }
-
-        EventPostFromIRQ (SYS_CLOCK_1S); // do not enable, it is too fast for main loop to handle
     }
-
 
 #if (KEY_USE_TIMER_TICK)
     if (ulSystemTickMS % (KEY_TIMER_TICK_EVERY_MS) == 0)
@@ -87,7 +76,7 @@ ISR(TIMER0_OVF_vect)
 }
 
 /**
- * Initialise system timer
+ * Initialize system timer
  */
 void TIMER_vInit(void)
 {
