@@ -15,6 +15,7 @@
 #include <events.h>
 #include "globals.h"
 #include "tools.h"
+#include "adc.h"
 
 /**
  * ISR for PCINT0
@@ -157,6 +158,7 @@ void main(void)
 
     sei(); // start interrupts (timer)
 
+    LOG_P(PSTR("Temp offset=%d gain=%d/100\n"), TEMP_SENS_OFFSET, TEMP_SENS_GAIN_100);
 	//SimulationLoop();
 	for (;;)
 	{
@@ -173,14 +175,32 @@ void main(void)
 		       switch (eEvent)
 		       {
 		           case SYS_GO_TO_SLEEP:
-		               vWaitForNextSeries();
+		               //vWaitForNextSeries();
 		               break;
 
 		           case SYS_CHECK_PULSES:
-		               bAnalyzeCollectedPulses();
+		               //bAnalyzeCollectedPulses();
 		               break;
 
 		       	   case SYS_CLOCK_1S:
+		       	       ADC_vPrepare();
+
+                       #if (0)
+		       	         ADC_vStart();
+	                     ADC_vWait();
+                       #else
+		       	         ADC_vStartNoiseReduction();
+		       	         while (bit_is_set(ADCSRA,ADSC)); // wait for end of conversion
+                       #endif
+
+		       	       ADC_vStop();
+
+		       	       //avg+=(iTemp-avg)/(float)i;
+
+		       	       printf("Temp ADC=%d ", iTemp);
+		               iTemp -= TEMP_SENS_OFFSET;
+		               //iTemp /= 1.22;
+		               printf("Temp=%d %d\n", iTemp, iTemp * TEMP_SENS_GAIN_100 / 100);
 		       		   //ARDUINO_LED_ON
 		       		   break;
 
@@ -196,7 +216,7 @@ void main(void)
 
 //		printf("\n");
 
-//		breakable_delay_ms(100);
+
 		//_delay_ms(50);
 	    //USART0_vSendByte (USART0_ucGetByte());
 	    //LOG_P(PSTR(" Woked up!\n"));

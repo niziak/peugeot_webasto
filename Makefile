@@ -80,7 +80,7 @@ SRC = 	$(TARGET).c
 
 SRC+= turning_light.c
 SRC+= usart0.c
-SRC+= timer0.c timer1.c
+SRC+= timer0.c timer1.c adc.c
 SRC+= log.c
 SRC+= globals.c
 SRC+= tools.c

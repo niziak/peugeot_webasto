@@ -11,6 +11,7 @@
 extern volatile uint16_t      ulSystemTickMS;
 extern volatile uint16_t      ulSystemTickS;
 extern volatile uint16_t      ulIdleTimeMS;
+extern volatile int16_t       iTemp;
 
 #include <avr/pgmspace.h>
 extern const char copyright[] PROGMEM;

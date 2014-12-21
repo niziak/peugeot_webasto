@@ -1,0 +1,3 @@
+ - internal sensor calibration with 2 points line equation
+ - (power down mode) first positive pulse is lost for ICP
+ 

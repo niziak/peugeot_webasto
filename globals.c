@@ -14,6 +14,8 @@ volatile uint32_t      ulSystemTickMS = 0;         ///< local time tick counter 
 volatile uint32_t      ulSystemTickS = 0;          ///< local time tick counter (increment every second)
 volatile uint16_t      ulIdleTimeMS = 0;            //TODO use SystemTickMS
 
+volatile int16_t       iTemp;
+
 #if 0
 OW_NEW_DEVICE_DEF           atdNewTempSensors  [NUM_OF_TEMP_SENSORS];
 TEMP_SENSOR_PARAMS_DEF      atdKnownTempSensors[NUM_OF_TEMP_SENSORS];

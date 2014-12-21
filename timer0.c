@@ -61,6 +61,7 @@ ISR(TIMER0_OVF_vect)
     if ((ulSystemTickMS % 1000) == 0)
     {
         ulSystemTickS++;
+        EventPostFromIRQ(SYS_CLOCK_1S);
     }
 
 #if (KEY_USE_TIMER_TICK)

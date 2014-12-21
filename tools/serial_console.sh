@@ -1,6 +1,11 @@
 #!/bin/sh
 DATE=`date "+%Y%m%d_%H%M%S"`
-putty -sercfg 8,1,115200,n,N -log ../out/${DATE}_putty.log -serial /dev/ttyUSB0
+LOGDIR="log"
+LOGFILE="${LOGDIR}/${DATE}_putty.log"
+mkdir -p ${LOGDIR}
+
+putty -sercfg 8,1,115200,n,N -log ${LOGFILE} -serial /dev/ttyUSB0
+
 exit 0
 
    -sercfg configuration-string
