@@ -78,7 +78,7 @@ EXTRAINCDIRS = 	lib
 # List C source files here. (C dependencies are automatically generated.)
 SRC = 	$(TARGET).c
 
-SRC+= turning_light.c
+SRC+= turning_light.c pulse_det.c
 SRC+= usart0.c
 SRC+= timer0.c timer1.c adc.c
 SRC+= log.c

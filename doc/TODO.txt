@@ -1,3 +1,6 @@
  - internal sensor calibration with 2 points line equation
  - (power down mode) first positive pulse is lost for ICP
+ - enable watchdog
+ - eeprom settings for pattern and temperature calibration
+ - timeout if T1 ovf
  

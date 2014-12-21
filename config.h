@@ -18,7 +18,7 @@
 
 #define PULSE_LEN_TOLERANCE_MS          20
 
-// Calibration from: http://www.atmel.com/images/doc8108.pdf
+// Calibration idea from: http://www.atmel.com/images/doc8108.pdf
 #define TEMP_SENS_T1_ADC                336
 #define TEMP_SENS_T1_REAL               10
 
@@ -30,4 +30,5 @@
 
 #define TEMP_SENS_OFFSET                ((TEMP_SENS_ADC_DIST/TEMP_SENS_REAL_DIST)-TEMP_SENS_T1_REAL+TEMP_SENS_T1_ADC)
 #define TEMP_SENS_GAIN_100              (TEMP_SENS_T2_REAL*100)/((TEMP_SENS_T2_ADC)-(TEMP_SENS_OFFSET))
+
 
