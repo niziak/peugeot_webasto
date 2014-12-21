@@ -92,6 +92,7 @@ void LOG_Reset (const char * message)
 	    ARDUINO_LED_ALTER
 	    _delay_ms(500);
 	}
+    wdt_enable(WDTO_2S);
 	for (;;); // real reset
 }
 
@@ -111,6 +112,7 @@ void LOG_Reset_P (const char * message)
         ARDUINO_LED_ALTER;
         _delay_ms(500);
     }
+    wdt_enable(WDTO_2S);
     for (;;); // real reset
 }
 

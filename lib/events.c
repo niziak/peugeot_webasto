@@ -15,6 +15,7 @@
 #include "events.h"
 
 #include <avr/pgmspace.h>
+#include <avr/delay.h>
 
 #if 0
     #define EV_DEBUG_P(a...)	DEBUG_P(a)
@@ -94,7 +95,7 @@ void EventPostFromIRQ (EVENT_DEF eEvent)
         {
             vDumpState();
             EV_DEBUG_P(PSTR("Ffull\n"));
-            breakable_delay_ms(300);
+            _delay_ms(100);
 //            return;
 //            for (;;);
             RESET_P(PSTR("Fifo full"));
