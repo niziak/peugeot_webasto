@@ -58,7 +58,7 @@ void main(void)
 	PIN_CHANGE_INT_ENABLE
 
 	USART0_vInit();
-	LOG_P(PSTR("Build " __TIME__ " " __DATE__ "\n\n"));
+	LOG_P(PSTR("Build " __TIME__ " " __DATE__ "\n"));
 	LOG_P(PSTR("Reset reason: "));
 	switch (mcusr)
 	{
@@ -74,7 +74,7 @@ void main(void)
 
     EventInit();
 
-	LOG_P(PSTR("Press enter for menu...\n"));
+	LOG_P(PSTR("\n\nPress enter for menu...\n"));
 
 	_delay_ms(500);
     ARDUINO_LED_OFF;
@@ -124,31 +124,42 @@ void main(void)
                        break;
 
 		           case EV_READ_TEMPERATURE:
-		               LOG_P(PSTR("Reading ambient temperature... "));
+		               LOG_P(PSTR("Reading ambient temperature...\n"));
 		               ADC_vPrepare();
-
-		                       #if (0)
-		                         ADC_vStart();
-		                         ADC_vWait();
-		                       #else
-		                         ADC_vStartNoiseReduction();
-		                         while (bit_is_set(ADCSRA,ADSC)); // wait for end of conversion
-		                       #endif
-
-		                       ADC_vStop();
-
-		                       //avg+=(iTemp-avg)/(float)i;
-
-		                       printf_P(PSTR("RAW ADC=%d "), iTemp);
-		                       iTemp -= TEMP_SENS_OFFSET;
-		                       //iTemp /= 1.22;
-		                       printf_P(PSTR("Temp=%d %d\n"), iTemp, iTemp * TEMP_SENS_GAIN_100 / 100);
-		               if ((iTemp * TEMP_SENS_GAIN_100 / 100) > 35)
+		               uint16_t uiAvg=0;
+		               for (uint8_t i=1; i<10; i++)
 		               {
+		                   DEBUG_T_P(PSTR("Start ADC... "));
+		                   _delay_ms(1); // uart TX
+                           #if (0)
+                             ADC_vStart();
+                             ADC_vWait();
+                           #else
+                             ADC_vStartNoiseReduction();
+                           #endif
+                           uiAvg = (uiAvg*(i-1)); // restore total value from previous samples
+                           uiAvg+= iTemp; // add current sample
+                           uiAvg/= i; // divide by number of current sample
+		                   DEBUG_P(PSTR("ADC=%d avg=%d\n"), iTemp, uiAvg);
+		               }
+                       ADC_vStop();
+
+                       DEBUG_T_P(PSTR("RAW ADC=%d "), iTemp);
+
+                       iTemp -= TEMP_SENS_OFFSET;
+                       iTemp *= TEMP_SENS_GAIN_100;
+                       iTemp /= 100;
+
+                       LOG_P(PSTR("Temp=%d\n"), iTemp);
+
+		               if (iTemp > HEATER_ENABLED_MAX_TEMPERATURE)
+		               {
+		                       LOG_P(PSTR("Ambient temp %d > %d set. Nothing to do.\n"),iTemp, HEATER_ENABLED_MAX_TEMPERATURE);
 		                       EventPost(EV_WAIT_FOR_PULSES);
 		               }
 		               else
 		               {
+                               LOG_P(PSTR("Ambient temp %d <= %d set.\n"),iTemp, HEATER_ENABLED_MAX_TEMPERATURE);
 		                       EventPost(EV_START_WEBASTO);
 		               }
 		               break;

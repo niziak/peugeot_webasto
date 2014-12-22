@@ -45,6 +45,7 @@ void ADC_vStartNoiseReduction(void)
     // it will automatically start ADC single conversion afte halting CPU
     set_sleep_mode (SLEEP_MODE_ADC); // wait for ADC complete int or other int
     sleep_mode();
+    while (bit_is_set(ADCSRA,ADSC)); // wait for end of conversion
 }
 
 void ADC_vWait(void)

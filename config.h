@@ -41,4 +41,5 @@
 #define TEMP_SENS_OFFSET                ((TEMP_SENS_ADC_DIST/TEMP_SENS_REAL_DIST)-TEMP_SENS_T1_REAL+TEMP_SENS_T1_ADC)
 #define TEMP_SENS_GAIN_100              (TEMP_SENS_T2_REAL*100)/((TEMP_SENS_T2_ADC)-(TEMP_SENS_OFFSET))
 
-#define HEATER_ENABLED_FOR              (5*60) ///< 15 minutes
+#define HEATER_ENABLED_FOR              (5*60)  ///< 15 minutes
+#define HEATER_ENABLED_MAX_TEMPERATURE  10      ///< in Celsius
