@@ -1,6 +1,22 @@
+Software:
  - internal sensor calibration with 2 points line equation
  - (power down mode) first positive pulse is lost for ICP
  - enable watchdog
  - eeprom settings for pattern and temperature calibration
  - timeout if T1 ovf
+ - cunits for temp calibration offset and gain
  
+
+Hardware:
+ - Max input voltage for Arduino Nano clone is 15V, 7805 is needed
+ - reduce current - change 7805 to LDO
+    - LP2950CZ - LDO 100mA - Extremely Low Quiescent Current
+    - LM2936-5.0 - LDO 50mA
+	
+ - how to send confirmation to user - blink turning light. 
+   All bulbs are connected to common ground. BSM-PSF1 is giving +12V to enable light.
+   Relay or IRFZ44 (requires at least 10V on gate)
+   
+ - turnlight through 22k resistor and 4v7 zener to ground + diode to plus
+ 
+ - 2 5V relay module takes 60mA per relay

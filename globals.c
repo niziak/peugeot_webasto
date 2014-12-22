@@ -16,6 +16,8 @@ volatile uint16_t      ulIdleTimeMS = 0;            //TODO use SystemTickMS
 
 volatile int16_t       iTemp;
 
+volatile uint16_t      uiHeaterSwitchOffAfter;
+
 #if 0
 OW_NEW_DEVICE_DEF           atdNewTempSensors  [NUM_OF_TEMP_SENSORS];
 TEMP_SENSOR_PARAMS_DEF      atdKnownTempSensors[NUM_OF_TEMP_SENSORS];

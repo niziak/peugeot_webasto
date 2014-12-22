@@ -44,19 +44,6 @@ ISR(TIMER0_OVF_vect)
     ulIdleTimeMS   ++;
     EventTimerTickEveryMS();
 
-    switch (ulIdleTimeMS)
-    {
-        case CHECK_WHEN_NO_PULSES_MS:
-            EventPostFromIRQ(SYS_CHECK_PULSES);
-            break;
-
-        case IDLE_WHEN_NO_PULSES_MS:
-            EventPostFromIRQ(SYS_GO_TO_SLEEP);
-            break;
-        default:
-            break;
-    }
-
     // ONE SECOND TICK
     if ((ulSystemTickMS % 1000) == 0)
     {
@@ -79,7 +66,7 @@ ISR(TIMER0_OVF_vect)
 /**
  * Initialize system timer
  */
-void TIMER_vInit(void)
+void TIMER0_vInit(void)
 {
 #if defined (__AVR_ATmega8__)
 

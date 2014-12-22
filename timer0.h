@@ -24,6 +24,6 @@
 
 #endif
 
-extern void TIMER_vInit(void);
+extern void TIMER0_vInit(void);
 
 #endif /* TIMER0_H_ */

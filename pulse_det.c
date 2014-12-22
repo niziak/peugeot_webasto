@@ -15,6 +15,7 @@
 #include <stdio.h>
 
 #include "config.h"
+#include "timer0.h"
 #include "timer1.h"
 #include "log.h"
 #include "globals.h"
@@ -31,7 +32,7 @@ const uint16_t auiExpectedPeriodsMS[MAX_PERIODS] =
         /*  7 */     200, 100,
         /*  8 */     200, 100,
         /*  9 */     200, 100,
-        /* 10 */     200, 100,
+        /* 10 */     200,
 };
 
 
@@ -39,6 +40,10 @@ void vWaitForNextSeries(void)
 {
     TIMER1_vStop();
     LOG_P(PSTR("Waiting for external event (power down)...\n"));
+    for (uint8_t i=0; i<10; i++)
+    {
+        LOG_P(PSTR(".\n"));
+    }
     _delay_ms(20); //give UART chance to transmit
 
     TIMER1_vInit(); // start pulse measure
@@ -55,7 +60,7 @@ void vWaitForNextSeries(void)
 
     ulSystemTickMS = 0;
 
-    TIMER_vInit();
+    TIMER0_vInit();
     sei();
 
     LOG_P(PSTR("Line change - back from power down mode!\n"));
@@ -64,23 +69,26 @@ void vWaitForNextSeries(void)
 
 BOOL bAnalyzeCollectedPulses(void)
 {
+
         uint8_t uiCollectedIndex, uiExpectedIndex;
         uiExpectedIndex = 0;
         BOOL bFirstMatched = FALSE;
-        BOOL bFailed = FALSE;
+        BOOL bOK = FALSE;
 
-        LOG_P(PSTR("Analysing...\n"));
+        LOG_P(PSTR("Analyzing pulses...\n"));
         for (uiCollectedIndex=0; uiCollectedIndex < MAX_PERIODS; uiCollectedIndex++)
         {
             uint32_t uiPeriodMS = (uint32_t)auiPeriods[uiCollectedIndex] * (uint32_t)TIMER1_TICK_US / (uint32_t)1000;
-            printf("#%03d got %5u ms", uiCollectedIndex, uiPeriodMS);
-            printf("    wait for   ");
-            printf("%5u ms [%03d] ", auiExpectedPeriodsMS[uiExpectedIndex], uiExpectedIndex);
+            LOG_P(PSTR("#%03d got %5u ms"), uiCollectedIndex, uiPeriodMS);
+            LOG_P(PSTR("    wait for   "));
+            LOG_P(PSTR("%5u ms #%03d "), auiExpectedPeriodsMS[uiExpectedIndex], uiExpectedIndex);
+
             if (    (auiExpectedPeriodsMS[uiExpectedIndex] + PULSE_LEN_TOLERANCE_MS > uiPeriodMS)
                  && (auiExpectedPeriodsMS[uiExpectedIndex] - PULSE_LEN_TOLERANCE_MS < uiPeriodMS) )
             {
                 bFirstMatched = TRUE;
-                printf("ok\n");
+                bOK = TRUE;
+                LOG_P(PSTR("ok\n"));
             }
             else
             // value not matched
@@ -88,12 +96,17 @@ BOOL bAnalyzeCollectedPulses(void)
                 if (bFirstMatched)
                 {
                     // fail - sequence started, but value is not matched
-                    printf("NOK\n");
-                    bFailed = TRUE;
+                    // if failed was not last (last entry = 0)
+                    if (auiExpectedPeriodsMS[uiExpectedIndex] >0)
+                    {
+                        bOK = FALSE;
+                        LOG_P(PSTR("NOK"));
+                    }
+                    LOG_vNL();
                 }
                 else
                 {
-                    printf("\n");
+                    LOG_P(PSTR("\n"));
                 }
             }
 
@@ -102,10 +115,10 @@ BOOL bAnalyzeCollectedPulses(void)
                 uiExpectedIndex++;
             }
 
-            if (bFailed)
-            {
-                break;
-            }
+//            if (bFailed)
+//            {
+//                break;
+//            }
         }
-        return bFailed;
+        return bOK;
 }

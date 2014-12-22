@@ -15,7 +15,7 @@
 #include "events.h"
 
 #include <avr/pgmspace.h>
-#include <avr/delay.h>
+#include <util/delay.h>
 
 #if 0
     #define EV_DEBUG_P(a...)	DEBUG_P(a)

@@ -12,11 +12,7 @@
 
 typedef enum
 {
-    EVENT_TIMER_1WIRE = 0,  ///< timer id, first must be zero because it is used as index in @atdTimers
-    EVENT_TIMER_POPUP,
-    #if WITH_RTC_DRIFT_MEASURE
-    EVENT_TIMER_RTC_OFFSET, ///< RTC drift calculation
-    #endif
+    EVENT_TIMER_CHECK_PATTERN = 0,  ///< timer id, first must be zero because it is used as index in @atdTimers
 
     EVENT_TIMER_LAST,
 } EVENT_DELAYED_TIMER_ID;
@@ -31,11 +27,14 @@ typedef enum
 
     SYS_CLOCK_1S,              ///< every one second
 
-    SYS_PB0_HI,					///< PB0 was changed to HI state
-    SYS_T1INT,
+    EV_CHECK_PATTERN,
+    EV_WAIT_FOR_PULSES,
+    EV_PULSE_TOO_LONG,
+    EV_WRONG_PATTERN,
+    EV_GOOD_PATTERN,
 
-    SYS_CHECK_PULSES,
-    SYS_GO_TO_SLEEP,
+    EV_READ_TEMPERATURE,
+    EV_START_WEBASTO,
 } EVENT_DEF;
 
 extern void EventPost (EVENT_DEF eEvent);

@@ -19,7 +19,7 @@
  * D5             --------PCINT21 / OC0B  / T1    PD5   11 ####8##### 18  PB4 MISO / PCINT4                                            D12
  * D6             --------PCINT22 / OC0A  / AIN0  PD6   12 ####p##### 17  PB3 MOSI / OC2A / PCINT3                                     D11
  * D7             --------PCINT23 / AIN1          PD7   13 ########## 16  PB2 SSn  / OC1B / PCINT2-----                                D10
- * D8---Turning light-----PCINT0  / CLK0  / ICP1  PB0   14 ########## 15  PB1        OC1A / PCINT1-----                                D9
+ * D8---Turning light-----PCINT0  / CLK0  / ICP1  PB0   14 ########## 15  PB1        OC1A / PCINT1----- START WEBASTO -----------------D9
 */ 
  
 /**

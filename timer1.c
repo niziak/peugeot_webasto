@@ -42,8 +42,8 @@ volatile uint8_t  ucWriteIndex;
 
 ISR(TIMER1_OVF_vect)
 {
-//	EventPostFromIRQ(SYS_T1INT);
-//	T1Ovs1++;
+    TIMER1_vStop();
+	EventPostFromIRQ(EV_PULSE_TOO_LONG);
 }
 
 
@@ -59,6 +59,7 @@ ISR(TIMER1_CAPT_vect)
     {
         ucWriteIndex = 0;
         TIMER1_vStop();
+        EventPostFromIRQ(EV_CHECK_PATTERN);
         return;
     }
     auiPeriods[ucWriteIndex++] = uiCRTemp;
