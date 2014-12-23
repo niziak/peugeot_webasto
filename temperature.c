@@ -7,6 +7,8 @@
 
 #include <stdio.h>
 
+#include <util/delay.h>
+
 #include "config.h"
 #include "adc.h"
 #include "globals.h"
@@ -49,11 +51,24 @@ void TEMP_vPrintCalibrationData(void)
 void TEMP_vReadCalibrationDataFromConsole(void)
 {
     TEMP_vPrintCalibrationData();
+    int status;
+
     for (uint8_t i=0; i<TEMP_CALIB_POINTS; i++)
     {
         LOG_NL;
-        LOG_P(PSTR("\t#%d new RAW="),i ); scanf("%d", &pstSettings->astTempCal[i].s16ADCTemp);
-        LOG_P(PSTR("\t#%d new   T="),i ); scanf("%d", &pstSettings->astTempCal[i].s8RealTemp);
+        do
+        {
+            LOG_P(PSTR("\t#%d new RAW="),i );
+            status = scanf("%d", &pstSettings->astTempCal[i].s16ADCTemp);
+            LOG_P(PSTR("Scanf returns %d value is %d\n"), status, pstSettings->astTempCal[i].s16ADCTemp);
+            if (status !=1 )
+            {
+                LOG_P(PSTR("consumed char=0x%02X\n"), getchar());
+            }
+        } while (status != 1);
+        _delay_ms(5000);
+        LOG_P(PSTR("\t#%d new   T="),i ); status = scanf("%d", &pstSettings->astTempCal[i].s8RealTemp);
+        LOG_P(PSTR("Scanf returns %d value is %d\n"), status, pstSettings->astTempCal[i].s8RealTemp);
     }
     LOG_NL;
 }
@@ -68,7 +83,7 @@ void TEMP_vCalculateCalibration(void)
     LOG_P(PSTR("Temp offset=%d gain=%d/100\n"), s16Offset, s16Gain100);
 }
 
-void vReadTemperature(void)
+void TEMP_vReadTemperature(void)
 {
     ADC_vPrepare();
     uint16_t uiAvg=0;

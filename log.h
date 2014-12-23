@@ -20,6 +20,7 @@
 #define LOG_P(format, string...)        LOG_Log_P(format, ##string)
 #define DEBUG_MEM(ptr,size)             {DEBUG("\nMEM: %s=@%p (%d):\n", #ptr, ptr, size); LOG_vMemDump(ptr,size); }
 #define LOG_NL                          {LOG_vNL();}
+#define LOG_SPACE                       {LOG_Log_P(PSTR(" ")); }
 
 extern void LOG_Reset    (const char * message);
 extern void LOG_Reset_P  (const char * message);

@@ -10,6 +10,7 @@
 #include <avr/sleep.h>
 #include <util/delay.h>
 
+#include "types.h"
 #include "globals.h"
 
 

@@ -431,7 +431,7 @@ all: begin gccversion
 	$(MAKE) -j $(JOBS) build 
 	$(MAKE) sizeafter 
 	$(MAKE) end
-	$(MAKE) objdump
+#	$(MAKE) objdump
 #all: begin build sizeafter end
 
 # Change the build target to build a HEX file or a library.

@@ -68,8 +68,8 @@ BOOL bAnalyzeCollectedPulses(void)
             LOG_P(PSTR("    wait for   "));
             LOG_P(PSTR("%5u ms #%03d "), pstSettings->auiExpectedPeriodsMS[uiExpectedIndex], uiExpectedIndex);
 
-            if (    (pstSettings->auiExpectedPeriodsMS[uiExpectedIndex] + PULSE_LEN_TOLERANCE_MS > uiPeriodMS)
-                 && (pstSettings->auiExpectedPeriodsMS[uiExpectedIndex] - PULSE_LEN_TOLERANCE_MS < uiPeriodMS) )
+            if (    (pstSettings->auiExpectedPeriodsMS[uiExpectedIndex] + pstSettings->u16PulseLenToleranceMs > uiPeriodMS)
+                 && (pstSettings->auiExpectedPeriodsMS[uiExpectedIndex] - pstSettings->u16PulseLenToleranceMs < uiPeriodMS) )
             {
                 bFirstMatched = TRUE;
                 bOK = TRUE;

@@ -6,6 +6,8 @@
  */
 #include <util/delay.h>
 #include <avr/sleep.h>
+#include <avr/wdt.h>
+#include <avr/interrupt.h>
 #include <config.h>
 
 static volatile BOOL bStop;
@@ -64,3 +66,23 @@ void vIncrementWithRange (char *pcValue, int iStep, char cMin, char cMax)
     }
 }
 
+
+void WdtEnable(void)
+{
+    wdt_enable(WDTO_2S);
+}
+
+void WdtDisable(void)
+{
+    wdt_disable();
+}
+
+/**
+ * HW reset using watchdog
+ */
+void WdtResetHW(void)
+{
+    cli();
+    wdt_enable(WDTO_2S);
+    for (;;); // real reset
+}

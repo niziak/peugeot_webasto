@@ -17,11 +17,12 @@ volatile uint32_t      ulSystemTickS = 0;          ///< local time tick counter 
 
 volatile uint16_t      uiIdleTimeMS = IDLE_TIME_DISABLED;  ///<
 
-volatile int16_t       iTemp;
-
-volatile uint16_t      uiHeaterSwitchOffAfter;
+int16_t                iTemp;
+uint16_t               uiHeaterSwitchOffAfterS;
 
 NVM_SET_DEF            stSettings;
+
+BOOL                   bInMenu;             ///< program state, FALSE - normal execution, TRUE - interactive menu
 
 
 
@@ -56,7 +57,7 @@ void NVM_vSetDefaultValues(void)
 
     pstSettings->u16IdleWhenNoPulsesMs          = IDLE_WHEN_NO_PULSES_MS;
     pstSettings->u16PulseLenToleranceMs         = PULSE_LEN_TOLERANCE_MS;
-    pstSettings->u16HeaterEnabledForS           = HEATER_ENABLED_FOR;
+    pstSettings->u16HeaterEnabledForMin         = HEATER_ENABLED_FOR_MIN;
     pstSettings->u8HeaterEnableMaxTemperature   = HEATER_ENABLED_MAX_TEMPERATURE;
 
     pstSettings->astTempCal[0].s16ADCTemp       = TEMP_SENS_T1_ADC;

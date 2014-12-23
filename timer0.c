@@ -13,11 +13,19 @@
 #include <events.h>
 #include "log.h"
 #include "timer0.h"
+#include "tools.h"
 
 
 #define WITH_INT_OVERLAP_DETECTION      TRUE
 
+/* ------------------------------------------- */
+static volatile uint8_t       u8UITimeoutS;     ///< when @ref bInMenu, this is a GUI timeout timer
+void vResetUITimeout (void)
+{
+    u8UITimeoutS = UI_TO_S;
+}
 
+/* ------------------------------------------- */
 static volatile uint32_t u32UserTimeout;
 
 void vSetUserTimeout (uint32_t u32TimeoutMS)
@@ -29,6 +37,8 @@ BOOL bIsTimedOut (void)
 {
     return (u32UserTimeout == 0);
 }
+
+/* ------------------------------------------- */
 
 #if (WITH_INT_OVERLAP_DETECTION)
 static volatile BOOL bInISR = FALSE;
@@ -55,6 +65,8 @@ ISR(TIMER0_OVF_vect)
 #endif
     ulSystemTickMS ++;
 
+
+
     if (u32UserTimeout>0)
     {
         u32UserTimeout--;
@@ -64,19 +76,42 @@ ISR(TIMER0_OVF_vect)
     {
         uiIdleTimeMS++;
     }
-    EventTimerTickEveryMS();
+
+    if (bInMenu)    // no event handler for menu mode
+    {
+
+    }
+    else
+    {
+        EventTimerTickEveryMS();
+        if (pstSettings->u16IdleWhenNoPulsesMs == uiIdleTimeMS)
+        {
+            EventPostFromIRQ(EV_PULSE_TOO_LONG);
+        }
+    }
+
 
     // ONE SECOND TICK
     if ((ulSystemTickMS % 1000) == 0)
     {
         ulSystemTickS++;
-        EventPostFromIRQ(EV_CLOCK_1S);
+        if (bInMenu)
+        {
+            if (u8UITimeoutS > 0)
+            {
+                if (--u8UITimeoutS == 0)
+                {
+                    WdtResetHW();
+                }
+            }
+        }
+        else
+        {
+            EventPostFromIRQ(EV_CLOCK_1S); // no event handler for menu mode
+        }
+
     }
 
-    if (pstSettings->u16IdleWhenNoPulsesMs == uiIdleTimeMS)
-    {
-        EventPostFromIRQ(EV_PULSE_TOO_LONG);
-    }
 #if (WITH_INT_OVERLAP_DETECTION)
     bInISR = FALSE;
 #endif

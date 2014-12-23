@@ -9,7 +9,7 @@
 #define HANDLER_MENU_H_
 
 
-
 extern BOOL MENU_bCheckEnterSequence(void);
+extern void MENU_vExecuteMenu(void);
 
 #endif /* HANDLER_MENU_H_ */

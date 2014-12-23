@@ -8,7 +8,7 @@
 #ifndef HANDLER_APP_H_
 #define HANDLER_APP_H_
 
-
+extern void APP_vHandleEvent(EVENT_DEF eEvent);
 
 
 

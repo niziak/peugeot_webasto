@@ -22,21 +22,8 @@
 #include "handler_menu.h"
 #include "handler_app.h"
 
-/**
- * ISR for PCINT0
- * PCINT[7:0] are serviced by PCINT0_vect
- */
-ISR(PCINT0_vect)
-{
-    if (bit_is_set(PINB, PINB0))
-    {
-    	uiIdleTimeMS = 0;
-    }
-}
 
 
-#define PIN_CHANGE_INT_ENABLE		{ PCICR  |=   _BV(PCIE0); PCMSK0 |=   _BV(PCINT0); }
-#define PIN_CHANGE_INT_DISABLE		{ PCICR  &= ~ _BV(PCIE0); PCMSK0 &= ~ _BV(PCINT0); }
 
 uint8_t mcusr __attribute__ ((section(".noinit")));
 void vGetOptibootMCUSR(void) __attribute__((naked)) __attribute((section(".init()")));
@@ -77,9 +64,10 @@ void main(void)
 
     if (MENU_bCheckEnterSequence())
     {
-
+        bInMenu = TRUE;
+        MENU_vExecuteMenu();
+        WdtResetHW();
     }
-
 
     ARDUINO_LED_OFF;
 
@@ -87,7 +75,7 @@ void main(void)
 
 	//SimulationLoop();
     EventPost(EV_WAIT_FOR_PULSES);
-    uiHeaterSwitchOffAfter = 0;
+    uiHeaterSwitchOffAfterS = 0;
 	for (;;)
 	{
 	    set_sleep_mode (SLEEP_MODE_IDLE); // wait for event (INT from 1ms timer)
@@ -99,85 +87,11 @@ void main(void)
 		       DEBUG_P(PSTR("\n----------------------------\n"));
 		       DEBUG_T_P(PSTR("Event %d\n\n"), eEvent);
 
-		       switch (eEvent)
-		       {
-		           case EV_WAIT_FOR_PULSES:
-		               uiHeaterSwitchOffAfter = 0;
-		               PIN_CHANGE_INT_ENABLE /// from now @ref uiIdleTimeMS is used for pulse detector
-		               vWaitForNextSeries();
-		               break;
+	           APP_vHandleEvent(eEvent);
 
-		           case EV_CHECK_PATTERN:
-		               if (bAnalyzeCollectedPulses())
-		               {
-		                   EventPost(EV_GOOD_PATTERN);
-		               }
-		               else
-		               {
-		                   EventPost(EV_WRONG_PATTERN);
-		               }
-		               break;
-
-                   case EV_GOOD_PATTERN:
-                       LOG_P(PSTR("Pattern match.\n"));
-                       EventPost(EV_READ_TEMPERATURE);
-                       break;
-
-		           case EV_READ_TEMPERATURE:
-		               LOG_P(PSTR("Reading ambient temperature...\n"));
-		               vReadTemperature();
-                       LOG_P(PSTR("Temp=%d\n"), iTemp);
-
-		               if (iTemp > HEATER_ENABLED_MAX_TEMPERATURE)
-		               {
-		                       LOG_P(PSTR("Ambient temp %d > %d set. Nothing to do.\n"), iTemp, HEATER_ENABLED_MAX_TEMPERATURE);
-		                       EventPost(EV_WAIT_FOR_PULSES);
-		               }
-		               else
-		               {
-                               LOG_P(PSTR("Ambient temp %d <= %d set.\n"),iTemp, HEATER_ENABLED_MAX_TEMPERATURE);
-		                       EventPost(EV_START_WEBASTO);
-		               }
-		               break;
-
-		           case EV_START_WEBASTO:
-		               LOG_P(PSTR("Starting heater!\n"));
-		               uiHeaterSwitchOffAfter = HEATER_ENABLED_FOR;
-		               break;
-
-		       	   case EV_CLOCK_1S:
-		       	       wdt_reset();
-		       	       if (uiHeaterSwitchOffAfter>0)
-		       	       {
-		       	           uiHeaterSwitchOffAfter--;
-		       	           LOG_P(PSTR("\tHeater enabled for %d sec.\n"), uiHeaterSwitchOffAfter);
-		       	           if (uiHeaterSwitchOffAfter==0)
-		       	           {
-		       	            LOG_P(PSTR("\tStopping heater!\n"), uiHeaterSwitchOffAfter);
-		       	               EventPost(EV_WAIT_FOR_PULSES);
-		       	           }
-		       	       }
-		       		   break;
-
-		       	   case EV_PULSE_TOO_LONG:
-		       	       LOG_P(PSTR("Last pulse too long.\n"));
-		       	       EventPost(EV_CHECK_PATTERN);
-		       	       break;
-
-                   case EV_WRONG_PATTERN:
-                       LOG_P(PSTR("Bad pattern!\n"));
-                       EventPost(EV_WAIT_FOR_PULSES);
-                       break;
-
-
-		       	   default:
-		       	       RESET_P(PSTR("unh event!"));
-		       		   break;
-		       } //switch (eEvent)
-		       //ARDUINO_LED_OFF
 		} // if (TRUE == bIsEventWaiting())
 
-        if (uiHeaterSwitchOffAfter>0)
+        if (uiHeaterSwitchOffAfterS>0)
         {
             HEATER_ON
             ARDUINO_LED_ON

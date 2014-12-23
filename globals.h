@@ -11,8 +11,11 @@
 extern volatile uint32_t      ulSystemTickMS;
 extern volatile uint32_t      ulSystemTickS;
 extern volatile uint16_t      uiIdleTimeMS;
-extern volatile int16_t       iTemp;
-extern volatile uint16_t      uiHeaterSwitchOffAfter;
+
+extern int16_t                iTemp;
+extern uint16_t               uiHeaterSwitchOffAfterS;
+
+extern BOOL                   bInMenu;
 
 #define IDLE_TIME_DISABLED  0xFFFF
 
@@ -34,8 +37,8 @@ typedef struct
 
     uint16_t                    u16IdleWhenNoPulsesMs;
     uint16_t                    u16PulseLenToleranceMs;
-    uint16_t                    u16HeaterEnabledForS;
-    uint8_t                      u8HeaterEnableMaxTemperature;
+    uint16_t                    u16HeaterEnabledForMin;
+    uint8_t                     u8HeaterEnableMaxTemperature;
 
     TEMP_CAL_DEF                astTempCal[TEMP_CALIB_POINTS];
 

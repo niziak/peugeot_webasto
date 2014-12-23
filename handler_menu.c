@@ -14,6 +14,17 @@
 #include "log.h"
 #include "usart0.h"
 #include "timer0.h"
+#include <events.h>
+#include "temperature.h"
+#include <nvm.h>
+
+
+void MENU_vExecuteMenu(void)
+{
+    TEMP_vReadCalibrationDataFromConsole();
+
+    NVM_vSaveSettings();
+}
 
 static BOOL bWaitForCR (void)
 {

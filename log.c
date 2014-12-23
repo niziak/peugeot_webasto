@@ -92,8 +92,7 @@ void LOG_Reset (const char * message)
 	    ARDUINO_LED_ALTER
 	    _delay_ms(500);
 	}
-    wdt_enable(WDTO_2S);
-	for (;;); // real reset
+	WdtResetHW();
 }
 
 #ifdef __GNUC__
@@ -112,10 +111,11 @@ void LOG_Reset_P (const char * message)
         ARDUINO_LED_ALTER;
         _delay_ms(500);
     }
-    wdt_enable(WDTO_2S);
-    for (;;); // real reset
+    WdtResetHW();
 }
 
+#define DUMP_COLS       16
+#define DUMP_COLS_SEP   4
 /**
  * Print content of memory block in HEX block
  * @param ptr
@@ -129,7 +129,11 @@ void LOG_vMemDump(void *ptr, uint16_t size)
     {
         LOG_Log_P(PSTR("%02X "), *pucMem++);
         ucCol++;
-        if (ucCol > 7)
+        if ((ucCol % DUMP_COLS_SEP) == 0)
+        {
+            LOG_SPACE
+        }
+        if (ucCol > DUMP_COLS-1)
         {
             ucCol=0;
             LOG_NL

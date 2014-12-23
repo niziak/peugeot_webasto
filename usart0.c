@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <avr/io.h>
+#include <avr/wdt.h>
 #include <util/delay.h>
 
 #include <config.h>
@@ -76,6 +77,10 @@ int USART0_iSendByteToStream (unsigned char ucByte, FILE *stream)
     {
         USART0_vSendByte ('\r');
     }
+    if (ucByte == '\r')
+    {
+        USART0_vSendByte ('\n');
+    }
     USART0_vSendByte (ucByte);
     return 1;
 }
@@ -94,10 +99,19 @@ BOOL USART0_bIsByteAvail(void)
 unsigned char USART0_ucGetByte(void)
 {
     // wait for data
-    loop_until_bit_is_set (UCSR0A, RXC0);
+    //loop_until_bit_is_set (UCSR0A, RXC0);
+    while ( ! (UCSR0A & _BV(RXC0)) )
+    {
+        wdt_reset(); // Shity solution, but Timer0 is still counting GUI time out
+    }
     return UDR0;
 }
 
+/**
+ * Blocking!
+ * @param stream
+ * @return
+ */
 int USART0_iReceiveByteForStream (FILE *stream)
 {
     uint8_t u8Byte = USART0_ucGetByte();

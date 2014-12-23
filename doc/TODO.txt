@@ -1,11 +1,36 @@
 Software:
- - internal sensor calibration with 2 points line equation
- - (power down mode) first positive pulse is lost for ICP
- - enable watchdog
+ - how to deal with blocking input and event processing (fifo overflow)
+   - shared input characters buffer (16 characters buffer is enough for numbers)
+   - IRQ driven buffer UART RX 
+   - no scanf possible on stdin!!! Instead scanf:
+      - show user string and ask for value
+      - enable buffered RX subsystem (ignore pending input, clear buffer), 
+        switch to waiting state and wait for event <-- app is not blocked
+   
+   - buffered uart RX in IRQ
+      - collect characters until:
+          - '\n' will send event like input string ready
+          - buffer overflow will send overflow event - should be treated as input garbage
+      - RX subsystem will be paused to prevent any character processing
+   - after event, app should perfrom sscanf on shared buffer
+    
+   - put non blocking menu handler into main app event handler
+   - design menu handler as state machine
+   - possible to redraw screen - in given state (because debug infos are destroing menu)
+      - so also partial input buffer should be redraw, if user is just typing during screen redraw
+      - maybe SHIFT+R will always send redraw event ?
+      - for redraw we need current state and previous (current is waiting for input, previous was presenting question for user)
+         - or provide 2 handlers per state (show_question(state) and wait_for_input(state) )
+
+
  - eeprom settings for pattern and temperature calibration
- - timeout if T1 ovf
+ 
+ 
  - cunits for temp calibration offset and gain
+ 
  - optimize loops for AVR (decrement and predecrement)
+ - inlining 
+ - reduce printf/scanf sizes
  
 
 Hardware:
