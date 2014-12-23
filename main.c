@@ -17,6 +17,10 @@
 #include "tools.h"
 #include "adc.h"
 #include "pulse_det.h"
+#include <nvm.h>
+#include "temperature.h"
+#include "handler_menu.h"
+#include "handler_app.h"
 
 /**
  * ISR for PCINT0
@@ -26,8 +30,7 @@ ISR(PCINT0_vect)
 {
     if (bit_is_set(PINB, PINB0))
     {
-    	ulIdleTimeMS = 0;
-        //EventPostFromIRQ(SYS_PB0_HI);
+    	uiIdleTimeMS = 0;
     }
 }
 
@@ -45,6 +48,7 @@ void vGetOptibootMCUSR(void)
 void main(void) __attribute__ ((noreturn));
 void main(void)
 {
+    wdt_enable(WDTO_2S);
 
     WEBASTO_PIN_SETUP;
     HEATER_OFF;
@@ -55,37 +59,32 @@ void main(void)
 	DDRB   &= ~ _BV(PB0);     // DDR=0 = input port
 	PORTB  |=   _BV(PB0);     // enable pull up		//TODO remove in final to prevent current consumption
 
-	PIN_CHANGE_INT_ENABLE
-
 	USART0_vInit();
+
 	LOG_P(PSTR("Build " __TIME__ " " __DATE__ "\n"));
-	LOG_P(PSTR("Reset reason: "));
-	switch (mcusr)
-	{
-		case (1<<PORF):  LOG_P (PSTR("Power on\n"));      break;
-		case (1<<EXTRF): LOG_P (PSTR("Ext RST\n"));       break;
-		case (1<<BORF):  LOG_P (PSTR("Brown out RST\n")); break;
-		case (1<<WDRF):	 LOG_P (PSTR("WDT RST\n"));       break;
-		default:
-		    LOG_P(PSTR("%02X\n"), mcusr);
-			break;
 
-	}
+	LOG_P(PSTR("Reset reason: 0x%02X "), mcusr);
+	if (mcusr & _BV(PORF) ) LOG_P (PSTR("PWR "));
+	if (mcusr & _BV(EXTRF)) LOG_P (PSTR("RST "));
+	if (mcusr & _BV(BORF) ) LOG_P (PSTR("BRW "));
+	if (mcusr & _BV(WDRF) ) LOG_P (PSTR("WDT "));
+	LOG_NL;
 
+	NVM_vLoadSettings();
     EventInit();
+    TIMER0_vInit();
+    sei(); // start interrupts (especially timer)
 
-	LOG_P(PSTR("\n\nPress enter for menu...\n"));
+    if (MENU_bCheckEnterSequence())
+    {
 
-	_delay_ms(500);
+    }
+
+
     ARDUINO_LED_OFF;
 
+    TEMP_vCalculateCalibration();
 
-    wdt_enable(WDTO_2S);
-    TIMER0_vInit();
-
-    sei(); // start interrupts (timer)
-
-    LOG_P(PSTR("Temp offset=%d gain=%d/100\n"), TEMP_SENS_OFFSET, TEMP_SENS_GAIN_100);
 	//SimulationLoop();
     EventPost(EV_WAIT_FOR_PULSES);
     uiHeaterSwitchOffAfter = 0;
@@ -104,6 +103,7 @@ void main(void)
 		       {
 		           case EV_WAIT_FOR_PULSES:
 		               uiHeaterSwitchOffAfter = 0;
+		               PIN_CHANGE_INT_ENABLE /// from now @ref uiIdleTimeMS is used for pulse detector
 		               vWaitForNextSeries();
 		               break;
 
@@ -125,36 +125,12 @@ void main(void)
 
 		           case EV_READ_TEMPERATURE:
 		               LOG_P(PSTR("Reading ambient temperature...\n"));
-		               ADC_vPrepare();
-		               uint16_t uiAvg=0;
-		               for (uint8_t i=1; i<10; i++)
-		               {
-		                   DEBUG_T_P(PSTR("Start ADC... "));
-		                   _delay_ms(1); // uart TX
-                           #if (0)
-                             ADC_vStart();
-                             ADC_vWait();
-                           #else
-                             ADC_vStartNoiseReduction();
-                           #endif
-                           uiAvg = (uiAvg*(i-1)); // restore total value from previous samples
-                           uiAvg+= iTemp; // add current sample
-                           uiAvg/= i; // divide by number of current sample
-		                   DEBUG_P(PSTR("ADC=%d avg=%d\n"), iTemp, uiAvg);
-		               }
-                       ADC_vStop();
-
-                       DEBUG_T_P(PSTR("RAW ADC=%d "), iTemp);
-
-                       iTemp -= TEMP_SENS_OFFSET;
-                       iTemp *= TEMP_SENS_GAIN_100;
-                       iTemp /= 100;
-
+		               vReadTemperature();
                        LOG_P(PSTR("Temp=%d\n"), iTemp);
 
 		               if (iTemp > HEATER_ENABLED_MAX_TEMPERATURE)
 		               {
-		                       LOG_P(PSTR("Ambient temp %d > %d set. Nothing to do.\n"),iTemp, HEATER_ENABLED_MAX_TEMPERATURE);
+		                       LOG_P(PSTR("Ambient temp %d > %d set. Nothing to do.\n"), iTemp, HEATER_ENABLED_MAX_TEMPERATURE);
 		                       EventPost(EV_WAIT_FOR_PULSES);
 		               }
 		               else
@@ -169,7 +145,7 @@ void main(void)
 		               uiHeaterSwitchOffAfter = HEATER_ENABLED_FOR;
 		               break;
 
-		       	   case SYS_CLOCK_1S:
+		       	   case EV_CLOCK_1S:
 		       	       wdt_reset();
 		       	       if (uiHeaterSwitchOffAfter>0)
 		       	       {

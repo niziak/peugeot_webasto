@@ -121,10 +121,10 @@ void LOG_Reset_P (const char * message)
  * @param ptr
  * @param size
  */
-void LOG_vMemDump(void *ptr, UCHAR size)
+void LOG_vMemDump(void *ptr, uint16_t size)
 {
-    UCHAR ucCol=0;
-    UCHAR *pucMem = (UCHAR*) ptr;
+    uint8_t ucCol=0;
+    uint8_t *pucMem = (uint8_t*) ptr;
     while (size--)
     {
         LOG_Log_P(PSTR("%02X "), *pucMem++);

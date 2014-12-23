@@ -78,14 +78,15 @@ EXTRAINCDIRS = 	lib
 # List C source files here. (C dependencies are automatically generated.)
 SRC = 	$(TARGET).c
 
-SRC+= turning_light.c pulse_det.c
+SRC+= turning_light.c pulse_det.c handler_app.c handler_menu.c
 SRC+= usart0.c
 SRC+= timer0.c timer1.c adc.c
 SRC+= log.c
 SRC+= globals.c
-SRC+= tools.c
+SRC+= tools.c temperature.c
 
 SRC+= lib/events.c
+SRC+= lib/nvm.c
 
 # List C++ source files here. (C dependencies are automatically generated.)
 CPPSRC = 

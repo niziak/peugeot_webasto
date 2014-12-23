@@ -63,3 +63,4 @@ void vIncrementWithRange (char *pcValue, int iStep, char cMin, char cMax)
         //CLOCK_PRINTF_P(PSTR("result %d\n"), *pucValue);
     }
 }
+

@@ -23,9 +23,9 @@ typedef enum
 
 typedef enum
 {
-    SYS_EVENT_NONE = 0,
+    EV_NONE = 0,
 
-    SYS_CLOCK_1S,              ///< every one second
+    EV_CLOCK_1S,              ///< every one second
 
     EV_CHECK_PATTERN,
     EV_WAIT_FOR_PULSES,

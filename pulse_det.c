@@ -19,22 +19,7 @@
 #include "timer1.h"
 #include "log.h"
 #include "globals.h"
-
-
-const uint16_t auiExpectedPeriodsMS[MAX_PERIODS] =
-{
-        /*  1 */     200, 100,
-        /*  2 */     200, 100,
-        /*  3 */     200, 100,
-        /*  4 */     200, 100,
-        /*  5 */     200, 100,
-        /*  6 */     200, 100,
-        /*  7 */     200, 100,
-        /*  8 */     200, 100,
-        /*  9 */     200, 100,
-        /* 10 */     200,
-};
-
+#include "usart0.h"
 
 void vWaitForNextSeries(void)
 {
@@ -44,7 +29,7 @@ void vWaitForNextSeries(void)
     {
         LOG_P(PSTR(".\n"));
     }
-    _delay_ms(20); //give UART chance to transmit
+    USART0_vFlush();
 
     TIMER1_vInit(); // start pulse measure
     sei();
@@ -81,10 +66,10 @@ BOOL bAnalyzeCollectedPulses(void)
             uint32_t uiPeriodMS = (uint32_t)auiPeriods[uiCollectedIndex] * (uint32_t)TIMER1_TICK_US / (uint32_t)1000;
             LOG_P(PSTR("#%03d got %5u ms"), uiCollectedIndex, uiPeriodMS);
             LOG_P(PSTR("    wait for   "));
-            LOG_P(PSTR("%5u ms #%03d "), auiExpectedPeriodsMS[uiExpectedIndex], uiExpectedIndex);
+            LOG_P(PSTR("%5u ms #%03d "), pstSettings->auiExpectedPeriodsMS[uiExpectedIndex], uiExpectedIndex);
 
-            if (    (auiExpectedPeriodsMS[uiExpectedIndex] + PULSE_LEN_TOLERANCE_MS > uiPeriodMS)
-                 && (auiExpectedPeriodsMS[uiExpectedIndex] - PULSE_LEN_TOLERANCE_MS < uiPeriodMS) )
+            if (    (pstSettings->auiExpectedPeriodsMS[uiExpectedIndex] + PULSE_LEN_TOLERANCE_MS > uiPeriodMS)
+                 && (pstSettings->auiExpectedPeriodsMS[uiExpectedIndex] - PULSE_LEN_TOLERANCE_MS < uiPeriodMS) )
             {
                 bFirstMatched = TRUE;
                 bOK = TRUE;
@@ -97,7 +82,7 @@ BOOL bAnalyzeCollectedPulses(void)
                 {
                     // fail - sequence started, but value is not matched
                     // if failed was not last (last entry = 0)
-                    if (auiExpectedPeriodsMS[uiExpectedIndex] >0)
+                    if (pstSettings->auiExpectedPeriodsMS[uiExpectedIndex] >0)
                     {
                         bOK = FALSE;
                         LOG_P(PSTR("NOK"));

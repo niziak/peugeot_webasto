@@ -18,28 +18,32 @@
 
 #define TIMER1_TICK_US                  64      ///< One T1 count = 64us
 
-/**
- * Not used. Currently Timer1 overflow is used for maximum pulse time or idle time (4.19 second)
- */
-//#define IDLE_WHEN_NO_PULSES_MS			2000	///< maximum pulse time in ms (max 4000!)
-
-
 #define MAX_PERIODS                     30      ///< how many periods store (positive and negative state lengths)
 
-#define PULSE_LEN_TOLERANCE_MS          20
+#define TEMP_CALIB_POINTS               2       ///< has to be 2!
+#define MENU_COUNTDOWN                  2
 
-// Calibration idea from: http://www.atmel.com/images/doc8108.pdf
+/// Default factory settings
+
+/**
+ * Timeout without PIN change interrupt (no pulses received)
+ * NOTE: Also Timer1 overflow is used for maximum pulse time or idle time (4.19 second)
+ */
+#define IDLE_WHEN_NO_PULSES_MS			2000	///< maximum pulse time in ms (max 4000!)
+#define PULSE_LEN_TOLERANCE_MS          20      ///< maximum pulse length difference (plus/ minux)
+#define HEATER_ENABLED_FOR              (5*60)  ///< 15 minutes
+#define HEATER_ENABLED_MAX_TEMPERATURE  10      ///< in Celsius
+
+
+
+
+
 #define TEMP_SENS_T1_ADC                336
 #define TEMP_SENS_T1_REAL               10
 
 #define TEMP_SENS_T2_ADC                356
 #define TEMP_SENS_T2_REAL               26
 
-#define TEMP_SENS_ADC_DIST              (TEMP_SENS_T2_ADC  - TEMP_SENS_T1_ADC)
-#define TEMP_SENS_REAL_DIST             (TEMP_SENS_T2_REAL - TEMP_SENS_T1_REAL)
 
-#define TEMP_SENS_OFFSET                ((TEMP_SENS_ADC_DIST/TEMP_SENS_REAL_DIST)-TEMP_SENS_T1_REAL+TEMP_SENS_T1_ADC)
-#define TEMP_SENS_GAIN_100              (TEMP_SENS_T2_REAL*100)/((TEMP_SENS_T2_ADC)-(TEMP_SENS_OFFSET))
 
-#define HEATER_ENABLED_FOR              (5*60)  ///< 15 minutes
-#define HEATER_ENABLED_MAX_TEMPERATURE  10      ///< in Celsius
+

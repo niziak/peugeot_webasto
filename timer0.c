@@ -17,6 +17,19 @@
 
 #define WITH_INT_OVERLAP_DETECTION      TRUE
 
+
+static volatile uint32_t u32UserTimeout;
+
+void vSetUserTimeout (uint32_t u32TimeoutMS)
+{
+    u32UserTimeout = u32TimeoutMS;
+}
+
+BOOL bIsTimedOut (void)
+{
+    return (u32UserTimeout == 0);
+}
+
 #if (WITH_INT_OVERLAP_DETECTION)
 static volatile BOOL bInISR = FALSE;
 #endif
@@ -41,23 +54,29 @@ ISR(TIMER0_OVF_vect)
     bInISR = TRUE;
 #endif
     ulSystemTickMS ++;
-    ulIdleTimeMS   ++;
+
+    if (u32UserTimeout>0)
+    {
+        u32UserTimeout--;
+    }
+
+    if (IDLE_TIME_DISABLED != uiIdleTimeMS)
+    {
+        uiIdleTimeMS++;
+    }
     EventTimerTickEveryMS();
 
     // ONE SECOND TICK
     if ((ulSystemTickMS % 1000) == 0)
     {
         ulSystemTickS++;
-        EventPostFromIRQ(SYS_CLOCK_1S);
+        EventPostFromIRQ(EV_CLOCK_1S);
     }
 
-#if (KEY_USE_TIMER_TICK)
-    if (ulSystemTickMS % (KEY_TIMER_TICK_EVERY_MS) == 0)
+    if (pstSettings->u16IdleWhenNoPulsesMs == uiIdleTimeMS)
     {
-        KEY_vKeyIsr();
+        EventPostFromIRQ(EV_PULSE_TOO_LONG);
     }
-#endif
-
 #if (WITH_INT_OVERLAP_DETECTION)
     bInISR = FALSE;
 #endif

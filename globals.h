@@ -8,34 +8,50 @@
 #ifndef GLOBALS_H_
 #define GLOBALS_H_
 
-extern volatile uint16_t      ulSystemTickMS;
-extern volatile uint16_t      ulSystemTickS;
-extern volatile uint16_t      ulIdleTimeMS;
+extern volatile uint32_t      ulSystemTickMS;
+extern volatile uint32_t      ulSystemTickS;
+extern volatile uint16_t      uiIdleTimeMS;
 extern volatile int16_t       iTemp;
 extern volatile uint16_t      uiHeaterSwitchOffAfter;
+
+#define IDLE_TIME_DISABLED  0xFFFF
+
+#include "config.h"
+
+/**
+ * Structure describes single point of temp sensor calibration
+ */
+typedef struct
+{
+    int8_t   s8RealTemp;
+    int16_t  s16ADCTemp;
+} TEMP_CAL_DEF;
+
+/** Structure to keep whole system settings */
+typedef struct
+{
+    uint16_t                    auiExpectedPeriodsMS[MAX_PERIODS];
+
+    uint16_t                    u16IdleWhenNoPulsesMs;
+    uint16_t                    u16PulseLenToleranceMs;
+    uint16_t                    u16HeaterEnabledForS;
+    uint8_t                      u8HeaterEnableMaxTemperature;
+
+    TEMP_CAL_DEF                astTempCal[TEMP_CALIB_POINTS];
+
+    uint8_t                     aucSpare[32];
+} NVM_SET_DEF;
+
+
+extern NVM_SET_DEF                  stSettings;
+#define pstSettings (&(stSettings))
+
 
 #include <avr/pgmspace.h>
 extern const char copyright[] PROGMEM;
 
 #if 0
 
-/** Structure to keep whole system settings */
-typedef struct
-{
-    UINT                        uiPumpManualTime;           ///< (in seconds) pump running time activated by user (manual mode)
-    UINT                        uiPumpPIRTime;              ///< (in seconds) pump running time activated from PIR sensor
-    UCHAR                       ucMinTempZasobnik;          ///< (in celsius) [0..99]
-    UCHAR                       ucMinTempKran;              ///< (in celsius) [0..99]
-    UCHAR                       ucMaxTempKran;              ///< (in celsius) [0..99]
-    signed char                 cSecondsPerDayAdj;          ///< (in seconds) [-20..20] daily adjustment for RTC clock (@ref SEC_PER_DAY_ADJ_MIN and @ref SEC_PER_DAY_ADJ_MAX)
-    UINT                        uiBacklightTime;            ///< (in seconds) back light time
-    UCHAR                       aucSpare[14];
-
-} NVM_SET_DEF;
-
-
-extern NVM_SET_DEF                  stSettings;
-#define pstSettings (&(stSettings))
 
 
 

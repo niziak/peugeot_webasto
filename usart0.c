@@ -6,13 +6,16 @@
 #include <config.h>
 #include <usart0.h>
 
-static FILE USART0_stream = FDEV_SETUP_STREAM (USART0_iSendByteToStream, NULL, _FDEV_SETUP_WRITE);
+//static FILE USART0_stream = FDEV_SETUP_STREAM (USART0_iSendByteToStream, NULL, _FDEV_SETUP_WRITE);
+static FILE USART0_stream = FDEV_SETUP_STREAM (USART0_iSendByteToStream, USART0_iReceiveByteForStream, _FDEV_SETUP_RW);
 
 void USART0_vInit(void)
 {
     #undef BAUD
     #define BAUD (USART0_BAUD)
-    #define BAUD_TOL 2       // baud tolerance in percent
+    // baud tolerance in percent
+    // 115200 with CLK 16MHz gives 3% error
+    #define BAUD_TOL 3       // baud tolerance in percent
 
     #include <util/setbaud.h>
     UBRR0H = UBRRH_VALUE;
@@ -38,7 +41,19 @@ void USART0_vInit(void)
                  _BV(UCSZ01) | _BV(UCSZ00)      // 8 bit
              );
 
-    stderr = stdout = &USART0_stream;
+    stdin = stderr = stdout = &USART0_stream;
+}
+
+/**
+ * Wait for TX buffer empty
+ */
+void USART0_vFlush(void)
+{
+    loop_until_bit_is_set (UCSR0A, UDRE0); // wait for empty buffer
+    //ATMEL: The TXCn Flag can be used to check that the Transmitter has completed all transfers
+    //       Note that the TXCn Flag must be cleared before each transmission (before UDRn is written) if it is used for this purpose
+    loop_until_bit_is_clear (UCSR0A, TXC0); // wait for TX complete flag
+    _delay_ms(1);
 }
 
 /**
@@ -48,7 +63,9 @@ void USART0_vInit(void)
 void USART0_vSendByte (unsigned char ucByte)
 {
     // wait for data registry empty
-    while ( ! (UCSR0A & (1<<UDRE0))) { };
+    loop_until_bit_is_set (UCSR0A, UDRE0);
+    //ATMEL: Note that the TXCn Flag must be cleared before each transmission (before UDRn is written) if it is used for this purpose
+    UCSR0A |= _BV(TXC0); // clear TXC0 by writing 1
     UDR0 = ucByte;
 }
 
@@ -66,7 +83,7 @@ int USART0_iSendByteToStream (unsigned char ucByte, FILE *stream)
 BOOL USART0_bIsByteAvail(void)
 {
 
-    return (UCSR0A & (1<<RXC0));
+    return (UCSR0A & _BV(RXC0));
 }
 
 
@@ -77,7 +94,13 @@ BOOL USART0_bIsByteAvail(void)
 unsigned char USART0_ucGetByte(void)
 {
     // wait for data
-    while ( ! (UCSR0A & (1<<RXC0))) { };
+    loop_until_bit_is_set (UCSR0A, RXC0);
     return UDR0;
 }
 
+int USART0_iReceiveByteForStream (FILE *stream)
+{
+    uint8_t u8Byte = USART0_ucGetByte();
+    USART0_iSendByteToStream(u8Byte, stream); // echo characters
+    return u8Byte;
+}

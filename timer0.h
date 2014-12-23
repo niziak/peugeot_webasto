@@ -26,4 +26,7 @@
 
 extern void TIMER0_vInit(void);
 
+extern void vSetUserTimeout (uint32_t u32TimeoutMS);
+extern BOOL bIsTimedOut (void);
+
 #endif /* TIMER0_H_ */

@@ -5,6 +5,7 @@ Software:
  - eeprom settings for pattern and temperature calibration
  - timeout if T1 ovf
  - cunits for temp calibration offset and gain
+ - optimize loops for AVR (decrement and predecrement)
  
 
 Hardware:
@@ -20,3 +21,9 @@ Hardware:
  - turnlight through 22k resistor and 4v7 zener to ground + diode to plus
  
  - 2 5V relay module takes 60mA per relay
+ 
+ 
+Max power consumption
+ - 60 mA 1 relay at 5V
+ - 30 mA CH340 USB-to-Serial converter when working (5V suspend 0,2mA)
+ - 

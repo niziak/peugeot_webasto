@@ -19,7 +19,10 @@
 
 extern void USART0_vInit(void);
 extern void USART0_vSendByte (unsigned char ucByte);
+extern void USART0_vFlush(void);
+
 extern int  USART0_iSendByteToStream (unsigned char ucByte, FILE *stream);
+extern int  USART0_iReceiveByteForStream (FILE *stream);
 
 extern BOOL USART0_bIsByteAvail(void);
 extern unsigned char USART0_ucGetByte(void);

@@ -38,8 +38,8 @@ static EVENT_DELAYED_TIMER_DEF  atdTimers[EVENT_TIMER_LAST];    ///< array index
 typedef struct
 {
     EVENT_DEF           aeCurrentEvent[EVENT_QUEUE_REAL_LEN];
-    UCHAR               ucReadPtr;
-    UCHAR               ucWritePtr;
+    uint8_t             ucReadPtr;
+    uint8_t             ucWritePtr;
     BOOL                bFull;
     BOOL                bEmpty;
 } FIFO_DEF;
@@ -76,7 +76,7 @@ static FIFO_DEF tdFifo;
 
 static void vDumpState(void)
 {
-    for (UCHAR a=0; a<sizeof(ptdFifo->aeCurrentEvent); a++ )
+    for (uint8_t a=0; a<sizeof(ptdFifo->aeCurrentEvent); a++ )
     {
         printf_P(PSTR("%X"), (unsigned char)ptdFifo->aeCurrentEvent[a]);
     }
@@ -145,7 +145,7 @@ void EventTimerClear (EVENT_DELAYED_TIMER_ID eTimerId)
 {
     EV_DEBUG_P(PSTR("EventTimerClear t %d\n"), eTimerId);
     atdTimers[eTimerId].delayms = 0;
-    atdTimers[eTimerId].eEvent = SYS_EVENT_NONE;
+    atdTimers[eTimerId].eEvent = EV_NONE;
 }
 
 /**
@@ -153,7 +153,7 @@ void EventTimerClear (EVENT_DELAYED_TIMER_ID eTimerId)
  */
 void EventTimerTickEveryMS(void)
 {
-    UCHAR a;
+    uint8_t a;
     for (a=0; a<sizeof(atdTimers)/sizeof(atdTimers[0]); a++)
     {
         if (atdTimers[a].delayms > 0)
@@ -182,18 +182,18 @@ BOOL bIsEventWaiting(void)
 
 EVENT_DEF EventGet(void)
 {
-    EVENT_DEF eRet=SYS_EVENT_NONE;
+    EVENT_DEF eRet=EV_NONE;
 
     EV_DEBUG_P(PSTR("Get\n"));
     if (bIsEventWaiting()==FALSE)
     {
         RESET_P(PSTR("GET but no ev"));
-        return SYS_EVENT_NONE;
+        return EV_NONE;
     }
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
         eRet = ptdFifo->aeCurrentEvent[ptdFifo->ucReadPtr];
-        ptdFifo->aeCurrentEvent[ptdFifo->ucReadPtr] = SYS_EVENT_NONE;
+        ptdFifo->aeCurrentEvent[ptdFifo->ucReadPtr] = EV_NONE;
         ptdFifo->ucReadPtr++;
         if (EVENT_QUEUE_LEN == ptdFifo->ucReadPtr)
         {
@@ -221,6 +221,6 @@ void EventInit(void)
     ptdFifo->ucWritePtr=0;
     ptdFifo->bFull=0;
     ptdFifo->bEmpty=0;
-    memset (ptdFifo->aeCurrentEvent, SYS_EVENT_NONE, sizeof(ptdFifo->aeCurrentEvent));
+    memset (ptdFifo->aeCurrentEvent, EV_NONE, sizeof(ptdFifo->aeCurrentEvent));
 }
 
