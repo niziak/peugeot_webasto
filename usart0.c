@@ -2,13 +2,84 @@
 #include <stdio.h>
 #include <avr/io.h>
 #include <avr/wdt.h>
+#include <avr/interrupt.h>
 #include <util/delay.h>
 
 #include <config.h>
 #include <usart0.h>
+#include <events.h>
+
+
+
+typedef struct
+{
+    volatile uint8_t au8RXLineBuffer[UART_RX_LINE_BUFFER];
+    volatile uint8_t u8NextWritePos;
+} RXB;
+
+static RXB stRXB;
+
 
 //static FILE USART0_stream = FDEV_SETUP_STREAM (USART0_iSendByteToStream, NULL, _FDEV_SETUP_WRITE);
 static FILE USART0_stream = FDEV_SETUP_STREAM (USART0_iSendByteToStream, USART0_iReceiveByteForStream, _FDEV_SETUP_RW);
+
+
+static void USART0_vRXEnable(void)
+{
+
+    UCSR0B |=   ( _BV(RXEN0) | _BV(RXCIE0) );
+}
+
+static void USART0_RXDisable(void)
+{
+    UCSR0B &= ~ ( _BV(RXEN0) | _BV(RXCIE0) );
+}
+
+/**
+ *
+ * @param USART_RX_vect
+ */
+ISR(USART_RX_vect)
+{
+    // Due to the buffering of the Error
+    // Flags, the UCSRnA must be read before the receive buffer (UDRn)
+    uint8_t u8Status = UCSR0A;
+    // reading UDR clears interrupt flag
+    uint8_t u8Char = UDR0;
+
+    if ( u8Status & (_BV(FE0) |_BV(DOR0) | _BV(UPE0) ) )
+    {
+        // ignore bad frames
+        return;
+    }
+
+    #if (1) // echo enabled
+    USART0_iSendByteToStream(u8Char, NULL); // TODO: make TX buffered and interrupt driven
+    //USART0_vSendByte (u8Char);
+    #endif
+
+    // write if there is space in buffer
+    if (stRXB.u8NextWritePos < sizeof(stRXB.au8RXLineBuffer))
+    {
+        stRXB.au8RXLineBuffer[stRXB.u8NextWritePos] = u8Char;
+        stRXB.u8NextWritePos++;
+    }
+    else
+    {
+        USART0_RXDisable();
+        EventPostFromIRQ(EV_UART_LINE_FULL);
+    }
+
+    // check end of line
+    if (u8Char == '\r')
+    {
+        USART0_RXDisable();
+        stRXB.au8RXLineBuffer[stRXB.u8NextWritePos] = 0; // null terminator
+        EventPostFromIRQ(EV_UART_LINE_COMPLETE);
+    }
+
+}
+
 
 void USART0_vInit(void)
 {
@@ -31,10 +102,11 @@ void USART0_vInit(void)
     //UBRR0H = (unsigned char) (USART0_UBBR_VAL >>8 );
     //UBRR0L = (unsigned char) (USART0_UBBR_VAL);
 
-    // Enable receiver and transmitter
+    // Enable transmitter
     UCSR0B = (
-                 _BV(RXEN0)
+                 0 /*_BV(RXEN0)*/
                | _BV(TXEN0)
+               /*| _BV(RXCIE0)*/
              );
 
     // set asynchronous mode, 8 bit data, NO parity, 1 bit stop
@@ -42,8 +114,15 @@ void USART0_vInit(void)
                  _BV(UCSZ01) | _BV(UCSZ00)      // 8 bit
              );
 
+
+
     stdin = stderr = stdout = &USART0_stream;
 }
+
+
+
+
+
 
 /**
  * Wait for TX buffer empty
@@ -53,10 +132,16 @@ void USART0_vFlush(void)
     loop_until_bit_is_set (UCSR0A, UDRE0); // wait for empty buffer
     //ATMEL: The TXCn Flag can be used to check that the Transmitter has completed all transfers
     //       Note that the TXCn Flag must be cleared before each transmission (before UDRn is written) if it is used for this purpose
-    loop_until_bit_is_clear (UCSR0A, TXC0); // wait for TX complete flag
+    //loop_until_bit_is_clear (UCSR0A, TXC0); // wait for TX complete flag
     _delay_ms(1);
 }
 
+void USART0_vRXFlush(void)
+{
+    uint8_t u8Char;
+    while ( UCSR0A & (1<<RXC0) ) u8Char = UDR0;
+
+}
 /**
  * Transmit single character
  * @param ucByte
@@ -68,6 +153,7 @@ void USART0_vSendByte (unsigned char ucByte)
     //ATMEL: Note that the TXCn Flag must be cleared before each transmission (before UDRn is written) if it is used for this purpose
     UCSR0A |= _BV(TXC0); // clear TXC0 by writing 1
     UDR0 = ucByte;
+    //loop_until_bit_is_set(UCSR0A, TXC0);
 }
 
 int USART0_iSendByteToStream (unsigned char ucByte, FILE *stream)
@@ -118,3 +204,17 @@ int USART0_iReceiveByteForStream (FILE *stream)
     USART0_iSendByteToStream(u8Byte, stream); // echo characters
     return u8Byte;
 }
+
+volatile uint8_t *pu8GetLineBuf(void)
+{
+    return stRXB.au8RXLineBuffer;
+}
+
+void USART0_vRXWaitForLine(void)
+{
+    stRXB.u8NextWritePos = 0;
+    memset (stRXB.au8RXLineBuffer, 0, UART_RX_LINE_BUFFER );
+    USART0_vRXFlush();
+    USART0_vRXEnable();
+}
+

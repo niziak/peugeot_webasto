@@ -69,7 +69,7 @@ void vIncrementWithRange (char *pcValue, int iStep, char cMin, char cMax)
 
 void WdtEnable(void)
 {
-    wdt_enable(WDTO_2S);
+    wdt_enable(WDTO_15MS);
 }
 
 void WdtDisable(void)

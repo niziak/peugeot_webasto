@@ -85,7 +85,7 @@ void main(void)
 		{
 		       EVENT_DEF eEvent = EventGet();
 		       DEBUG_P(PSTR("\n----------------------------\n"));
-		       DEBUG_T_P(PSTR("Event %d\n\n"), eEvent);
+		       DEBUG_T_P(PSTR("Event 0x%02X\n\n"), eEvent);
 
 	           APP_vHandleEvent(eEvent);
 

@@ -27,7 +27,7 @@ typedef enum
 
     EV_CLOCK_1S,              ///< every one second
 
-    EV_CHECK_PATTERN,
+    EV_CHECK_PATTERN      = 0x10,
     EV_WAIT_FOR_PULSES,
     EV_PULSE_TOO_LONG,
     EV_WRONG_PATTERN,
@@ -35,6 +35,10 @@ typedef enum
 
     EV_READ_TEMPERATURE,
     EV_START_WEBASTO,
+
+    EV_UART_LINE_COMPLETE = 0x20,
+    EV_UART_LINE_FULL,
+
 } EVENT_DEF;
 
 extern void EventPost (EVENT_DEF eEvent);

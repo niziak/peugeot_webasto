@@ -17,6 +17,8 @@
 #include "log.h"
 #include "temperature.h"
 #include "pulse_det.h"
+#include <stdio.h>
+#include "usart0.h"
 
 #define PIN_CHANGE_INT_ENABLE       { PCICR  |=   _BV(PCIE0); PCMSK0 |=   _BV(PCINT0); }
 #define PIN_CHANGE_INT_DISABLE      { PCICR  &= ~ _BV(PCIE0); PCMSK0 &= ~ _BV(PCINT0); }
@@ -105,7 +107,10 @@ void APP_vHandleEvent(EVENT_DEF eEvent)
                 EventPost(EV_WAIT_FOR_PULSES);
                 break;
 
-
+            case EV_UART_LINE_COMPLETE:
+            case EV_UART_LINE_FULL:
+                DEBUG_MEM(pu8GetLineBuf(), UART_RX_LINE_BUFFER);
+                break;
             default:
                 RESET_P(PSTR("unh event!"));
                 break;
