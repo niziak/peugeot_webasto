@@ -25,6 +25,14 @@ static int16_t  s16Offset;  ///< Temp offset
 #define TEMP_SENS_OFFSET                ((TEMP_SENS_ADC_DIST/TEMP_SENS_REAL_DIST)-TEMP_SENS_T1_REAL+TEMP_SENS_T1_ADC)
 #define TEMP_SENS_GAIN_100              (TEMP_SENS_T2_REAL*100)/((TEMP_SENS_T2_ADC)-(TEMP_SENS_OFFSET))
 
+/* TEST */
+#define TEMP_SENS_T1_ADC                336
+#define TEMP_SENS_T1_REAL               10
+
+#define TEMP_SENS_T2_ADC                358
+#define TEMP_SENS_T2_REAL               25
+// offset=327 gain 89/100
+
 
 static int16_t s16CalcOffset (TEMP_CAL_DEF *pstP1, TEMP_CAL_DEF *pstP2)
 {
@@ -41,6 +49,7 @@ static int16_t s16CalcGain100 (TEMP_CAL_DEF *pstP2, int16_t s16Offset)
 
 void TEMP_vPrintCalibrationData(void)
 {
+    LOG_P(PSTR("Calibration points:\n"));
     for (uint8_t i=0; i<TEMP_CALIB_POINTS; i++)
     {
         LOG_P(PSTR("\t#%d RAW=%3d T=%2d\n"), i, pstSettings->astTempCal[i].s16ADCTemp,
@@ -75,21 +84,20 @@ void TEMP_vReadCalibrationDataFromConsole(void)
 
 void TEMP_vCalculateCalibration(void)
 {
-    LOG_P(PSTR("Temp offset=%d gain=%d/100\n"), TEMP_SENS_OFFSET, TEMP_SENS_GAIN_100);
     TEMP_vPrintCalibrationData();
     s16Offset  = s16CalcOffset  (&pstSettings->astTempCal[0], &pstSettings->astTempCal[1]);
     s16Gain100 = s16CalcGain100 (&pstSettings->astTempCal[1], s16Offset);
 
-    LOG_P(PSTR("Temp offset=%d gain=%d/100\n"), s16Offset, s16Gain100);
+    LOG_P(PSTR("Calibration offset=%d gain=%d/100\n"), s16Offset, s16Gain100);
 }
 
 void TEMP_vReadTemperature(void)
 {
     ADC_vPrepare();
     uint16_t uiAvg=0;
-    for (uint8_t i=1; i<10; i++)
+    for (uint8_t i=1; i<11; i++)
     {
-        DEBUG_T_P(PSTR("Start ADC... "));
+        //DEBUG_T_P(PSTR("Start ADC... "));
         USART0_vFlush();
         #if (0)
           ADC_vStart();
@@ -100,16 +108,17 @@ void TEMP_vReadTemperature(void)
         uiAvg = (uiAvg*(i-1)); // restore total value from previous samples
         uiAvg+= iTemp; // add current sample
         uiAvg/= i; // divide by number of current sample
-        DEBUG_P(PSTR("ADC=%d avg=%d\n"), iTemp, uiAvg);
+        //DEBUG_P(PSTR("ADC=%d avg=%d\n"), iTemp, uiAvg);
     }
     ADC_vStop();
 
-    DEBUG_T_P(PSTR("RAW ADC=%d "), iTemp);
+    LOG_P(PSTR("Temperature: (RAW=%d) "), iTemp);
 
     iTemp -= TEMP_SENS_OFFSET;
     iTemp *= TEMP_SENS_GAIN_100;
     iTemp /= 100;
 
+    LOG_P(PSTR("REAL=%d\n"), iTemp);
 }
 
 

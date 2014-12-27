@@ -22,9 +22,8 @@ uint16_t               uiHeaterSwitchOffAfterS;
 
 NVM_SET_DEF            stSettings;
 
-BOOL                   bInMenu;             ///< program state, FALSE - normal execution, TRUE - interactive menu
-
-
+HND_DEF                eHandler;    ///< what application handler is active
+APP_ST_DEF             eState;      ///< handler state (shared for all handlers)
 
 const char copyright[] PROGMEM = "\
 Copyright (C) 2013-2015 Wojciech Nizinski. All rights reserved. \

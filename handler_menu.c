@@ -19,6 +19,64 @@
 #include <nvm.h>
 
 
+void MENU_vHandleEvent(EVENT_DEF eEvent)
+{
+    if (eEvent == EV_SHOW_MAIN_MENU) // initialisation event
+    {
+        eState = ST_MENU_SHOW_MAIN;
+    }
+    switch (eState)
+    {
+        case ST_MENU_SHOW_MAIN:
+            switch (eEvent)
+            {
+                case EV_UART_LINE_COMPLETE:
+                    DEBUG_MEM(pu8GetLineBuf(), UART_RX_LINE_BUFFER);
+                    switch (*pu8GetLineBuf())
+                    {
+                        case '1':
+                            uiHeaterSwitchOffAfterS = 1;
+                            LOG_P(PSTR("Heater is ON\n"));
+                            break;
+                        case '2':
+                            uiHeaterSwitchOffAfterS = 0;
+                            LOG_P(PSTR("Heater is OFF\n"));
+                            break;
+                        case '3':
+                            LOG_P(PSTR(""\n));
+                            TEMP_vCalculateCalibration();
+                            TEMP_vReadTemperature();
+                            break;
+                    }
+                    EventPost(EV_SHOW_MAIN_MENU);
+                    break;
+
+                case EV_UART_LINE_FULL:
+                    EventPost(EV_SHOW_MAIN_MENU);
+                    break;
+
+                case EV_SHOW_MAIN_MENU:
+                    LOG_NL;
+                    LOG_NL;
+                    LOG_P(PSTR("1. Turn heater ON\n"));
+                    LOG_P(PSTR("2. Turn heater OFF\n"));
+                    LOG_P(PSTR("3. Show temperature\n"));
+                    LOG_P(PSTR("\n"));
+                    LOG_P(PSTR("Choice> "));
+                    USART0_vRXWaitForLine();
+                    break;
+
+                case EV_CLOCK_1S:
+                    wdt_reset();
+                    break;
+
+                default:
+                    break;
+            }
+            break;
+    }
+}
+
 void MENU_vExecuteMenu(void)
 {
     TEMP_vReadCalibrationDataFromConsole();

@@ -41,11 +41,6 @@
 
 
 
-#define TEMP_SENS_T1_ADC                336
-#define TEMP_SENS_T1_REAL               10
-
-#define TEMP_SENS_T2_ADC                358
-#define TEMP_SENS_T2_REAL               25
 
 
 

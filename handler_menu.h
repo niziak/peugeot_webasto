@@ -10,6 +10,6 @@
 
 
 extern BOOL MENU_bCheckEnterSequence(void);
-extern void MENU_vExecuteMenu(void);
+extern void MENU_vHandleEvent(EVENT_DEF eEvent);
 
 #endif /* HANDLER_MENU_H_ */

@@ -77,37 +77,23 @@ ISR(TIMER0_OVF_vect)
         uiIdleTimeMS++;
     }
 
-    if (bInMenu)    // no event handler for menu mode
+    EventTimerTickEveryMS();
+    if (pstSettings->u16IdleWhenNoPulsesMs == uiIdleTimeMS)
     {
-
+        EventPostFromIRQ(EV_PULSE_TOO_LONG);
     }
-    else
-    {
-        EventTimerTickEveryMS();
-        if (pstSettings->u16IdleWhenNoPulsesMs == uiIdleTimeMS)
-        {
-            EventPostFromIRQ(EV_PULSE_TOO_LONG);
-        }
-    }
-
 
     // ONE SECOND TICK
     if ((ulSystemTickMS % 1000) == 0)
     {
+        EventPostFromIRQ(EV_CLOCK_1S); // no event handler for menu mode
         ulSystemTickS++;
-        if (bInMenu)
+        if (u8UITimeoutS > 0)
         {
-            if (u8UITimeoutS > 0)
+            if (--u8UITimeoutS == 0)
             {
-                if (--u8UITimeoutS == 0)
-                {
-                    WdtResetHW();
-                }
+                WdtResetHW();
             }
-        }
-        else
-        {
-            EventPostFromIRQ(EV_CLOCK_1S); // no event handler for menu mode
         }
 
     }

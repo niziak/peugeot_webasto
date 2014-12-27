@@ -53,6 +53,27 @@ extern NVM_SET_DEF                  stSettings;
 #include <avr/pgmspace.h>
 extern const char copyright[] PROGMEM;
 
+typedef enum
+{
+    HND_STARTUP,
+    HND_APP,
+    HND_MENU,
+} HND_DEF;
+
+extern HND_DEF eHandler;
+
+typedef enum
+{
+    ST_CHECK_FOR_MENU_ENTER,
+    ST_CHECK_FOR_1ST_CR,
+    ST_CHECK_FOR_2ND_CR,
+
+    ST_MENU_SHOW_MAIN,
+
+} APP_ST_DEF;
+
+extern APP_ST_DEF             eState;
+
 #if 0
 
 

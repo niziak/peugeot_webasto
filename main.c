@@ -21,10 +21,16 @@
 #include "temperature.h"
 #include "handler_menu.h"
 #include "handler_app.h"
+#include "handler_startup.h"
 
 
+#define DEBUG_EVENTS    0
 
 
+/**
+ * Get original reset reason from Optiboot.
+ * Optiboot bootloader should save original MCUSR into R2
+ */
 uint8_t mcusr __attribute__ ((section(".noinit")));
 void vGetOptibootMCUSR(void) __attribute__((naked)) __attribute((section(".init()")));
 void vGetOptibootMCUSR(void)
@@ -60,21 +66,17 @@ void main(void)
 	NVM_vLoadSettings();
     EventInit();
     TIMER0_vInit();
+    EventPost(EV_CLOCK_1S); // first generic event can be used as startup notification
     sei(); // start interrupts (especially timer)
-
-    if (MENU_bCheckEnterSequence())
-    {
-        bInMenu = TRUE;
-        MENU_vExecuteMenu();
-        WdtResetHW();
-    }
 
     ARDUINO_LED_OFF;
 
     TEMP_vCalculateCalibration();
 
-	//SimulationLoop();
-    EventPost(EV_WAIT_FOR_PULSES);
+    //SimulationLoop();
+    eState = ST_CHECK_FOR_MENU_ENTER;
+    eHandler = HND_STARTUP;
+
     uiHeaterSwitchOffAfterS = 0;
 	for (;;)
 	{
@@ -84,10 +86,26 @@ void main(void)
 		if (TRUE == bIsEventWaiting())
 		{
 		       EVENT_DEF eEvent = EventGet();
-		       DEBUG_P(PSTR("\n----------------------------\n"));
-		       DEBUG_T_P(PSTR("Event 0x%02X\n\n"), eEvent);
+               #if (DEBUG_EVENTS)
+		           DEBUG_P(PSTR("\n----------------------------\n"));
+		           DEBUG_T_P(PSTR("Event 0x%02X\n\n"), eEvent);
+               #endif
 
-	           APP_vHandleEvent(eEvent);
+		       switch (eHandler)
+		       {
+		           case HND_STARTUP:
+		               STARTUP_vHandleEvent(eEvent);
+		               break;
+
+		           case HND_APP:
+		               APP_vHandleEvent(eEvent);
+		               break;
+
+		           case HND_MENU:
+		               MENU_vHandleEvent(eEvent);
+		               break;
+
+		       }
 
 		} // if (TRUE == bIsEventWaiting())
 
