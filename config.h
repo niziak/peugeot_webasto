@@ -40,8 +40,12 @@
 #define HEATER_ENABLED_MAX_TEMPERATURE  10       ///< in Celsius
 
 
+#define TEMP_SENS_T1_ADC                336
+#define TEMP_SENS_T1_REAL               10
 
-
+#define TEMP_SENS_T2_ADC                358
+#define TEMP_SENS_T2_REAL               25
+// offset=327 gain 89/100
 
 
 

@@ -12,7 +12,7 @@
 #error "Please define F_CPU"
 #endif
 
-#define UART_RX_LINE_BUFFER     32  ///< maximum RXed number of characters
+#define UART_RX_LINE_BUFFER     16  ///< maximum RXed number of characters
 
 #define USART0_BAUD             115200
 
@@ -29,6 +29,9 @@ extern int  USART0_iReceiveByteForStream (FILE *stream);
 extern BOOL USART0_bIsByteAvail(void);
 extern unsigned char USART0_ucGetByte(void);
 
-volatile uint8_t *pu8GetLineBuf(void);
+extern void USART0_RXDisable(void);
+
+extern uint8_t * pu8GetLineBuf(void);
+extern void USART0_vRXWaitForLine(void);
 
 #endif /* USART0_H_ */

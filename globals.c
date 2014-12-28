@@ -57,7 +57,7 @@ void NVM_vSetDefaultValues(void)
     pstSettings->u16IdleWhenNoPulsesMs          = IDLE_WHEN_NO_PULSES_MS;
     pstSettings->u16PulseLenToleranceMs         = PULSE_LEN_TOLERANCE_MS;
     pstSettings->u16HeaterEnabledForMin         = HEATER_ENABLED_FOR_MIN;
-    pstSettings->u8HeaterEnableMaxTemperature   = HEATER_ENABLED_MAX_TEMPERATURE;
+    pstSettings->s8HeaterEnableMaxTemperature   = HEATER_ENABLED_MAX_TEMPERATURE;
 
     pstSettings->astTempCal[0].s16ADCTemp       = TEMP_SENS_T1_ADC;
     pstSettings->astTempCal[0].s8RealTemp       = TEMP_SENS_T1_REAL;

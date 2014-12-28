@@ -38,7 +38,7 @@ typedef struct
     uint16_t                    u16IdleWhenNoPulsesMs;
     uint16_t                    u16PulseLenToleranceMs;
     uint16_t                    u16HeaterEnabledForMin;
-    uint8_t                     u8HeaterEnableMaxTemperature;
+    int8_t                      s8HeaterEnableMaxTemperature;
 
     TEMP_CAL_DEF                astTempCal[TEMP_CALIB_POINTS];
 

@@ -25,13 +25,6 @@ static int16_t  s16Offset;  ///< Temp offset
 #define TEMP_SENS_OFFSET                ((TEMP_SENS_ADC_DIST/TEMP_SENS_REAL_DIST)-TEMP_SENS_T1_REAL+TEMP_SENS_T1_ADC)
 #define TEMP_SENS_GAIN_100              (TEMP_SENS_T2_REAL*100)/((TEMP_SENS_T2_ADC)-(TEMP_SENS_OFFSET))
 
-/* TEST */
-#define TEMP_SENS_T1_ADC                336
-#define TEMP_SENS_T1_REAL               10
-
-#define TEMP_SENS_T2_ADC                358
-#define TEMP_SENS_T2_REAL               25
-// offset=327 gain 89/100
 
 
 static int16_t s16CalcOffset (TEMP_CAL_DEF *pstP1, TEMP_CAL_DEF *pstP2)
@@ -49,11 +42,11 @@ static int16_t s16CalcGain100 (TEMP_CAL_DEF *pstP2, int16_t s16Offset)
 
 void TEMP_vPrintCalibrationData(void)
 {
-    LOG_P(PSTR("Calibration points:\n"));
+    LOG_P(PSTR("Temperature sensor calibration points:\n"));
     for (uint8_t i=0; i<TEMP_CALIB_POINTS; i++)
     {
-        LOG_P(PSTR("\t#%d RAW=%3d T=%2d\n"), i, pstSettings->astTempCal[i].s16ADCTemp,
-                                                pstSettings->astTempCal[i].s8RealTemp   );
+        LOG_P(PSTR("\t#%d RAW=%3d   REAL=%2d\n"), i, pstSettings->astTempCal[i].s16ADCTemp,
+                                                           pstSettings->astTempCal[i].s8RealTemp   );
     }
 }
 

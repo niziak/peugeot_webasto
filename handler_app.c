@@ -66,14 +66,14 @@ void APP_vHandleEvent(EVENT_DEF eEvent)
                 TEMP_vReadTemperature();
                 LOG_P(PSTR("Temp=%d\n"), iTemp);
 
-                if (iTemp > pstSettings->u8HeaterEnableMaxTemperature)
+                if (iTemp > pstSettings->s8HeaterEnableMaxTemperature)
                 {
-                        LOG_P(PSTR("Ambient temp %d > %d set. Nothing to do.\n"), iTemp, pstSettings->u8HeaterEnableMaxTemperature);
+                        LOG_P(PSTR("Ambient temp %d > %d set. Nothing to do.\n"), iTemp, pstSettings->s8HeaterEnableMaxTemperature);
                         EventPost(EV_WAIT_FOR_PULSES);
                 }
                 else
                 {
-                        LOG_P(PSTR("Ambient temp %d <= %d set.\n"),iTemp, pstSettings->u8HeaterEnableMaxTemperature);
+                        LOG_P(PSTR("Ambient temp %d <= %d set.\n"),iTemp, pstSettings->s8HeaterEnableMaxTemperature);
                         EventPost(EV_START_WEBASTO);
                 }
                 break;

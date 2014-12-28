@@ -5,6 +5,8 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
+#include <string.h>
+
 #include <config.h>
 #include <usart0.h>
 #include <events.h>
@@ -13,7 +15,7 @@
 
 typedef struct
 {
-    volatile uint8_t au8RXLineBuffer[UART_RX_LINE_BUFFER];
+    uint8_t au8RXLineBuffer[UART_RX_LINE_BUFFER];
     volatile uint8_t u8NextWritePos;
 } RXB;
 
@@ -24,13 +26,13 @@ static RXB stRXB;
 static FILE USART0_stream = FDEV_SETUP_STREAM (USART0_iSendByteToStream, USART0_iReceiveByteForStream, _FDEV_SETUP_RW);
 
 
-static void USART0_vRXEnable(void)
+void USART0_vRXEnable(void)
 {
 
     UCSR0B |=   ( _BV(RXEN0) | _BV(RXCIE0) );
 }
 
-static void USART0_RXDisable(void)
+void USART0_RXDisable(void)
 {
     UCSR0B &= ~ ( _BV(RXEN0) | _BV(RXCIE0) );
 }
@@ -47,15 +49,33 @@ ISR(USART_RX_vect)
     // reading UDR clears interrupt flag
     uint8_t u8Char = UDR0;
 
-    if ( u8Status & (_BV(FE0) |_BV(DOR0) | _BV(UPE0) ) )
+    if ( u8Status & (_BV(FE0) |_BV(DOR0) | _BV(UPE0)) )
     {
         // ignore bad frames
         return;
     }
 
+    switch (u8Char)
+    {
+        case 0x7F:  // backspace
+            if (stRXB.u8NextWritePos > 0)
+            {
+                stRXB.u8NextWritePos--;
+                USART0_iSendByteToStream(u8Char, NULL); // TODO: make TX buffered and interrupt driven
+            }
+            return; // ignore character (even do not echo)
+            break;
+
+        default:
+            break;
+    }
+
     #if (1) // echo enabled
-    USART0_iSendByteToStream(u8Char, NULL); // TODO: make TX buffered and interrupt driven
-    //USART0_vSendByte (u8Char);
+    //if (stRXB.u8NextWritePos > 0)
+    {
+        USART0_iSendByteToStream(u8Char, NULL); // TODO: make TX buffered and interrupt driven
+        //USART0_vSendByte (u8Char);
+    }
     #endif
 
     // write if there is space in buffer
@@ -139,7 +159,9 @@ void USART0_vFlush(void)
 void USART0_vRXFlush(void)
 {
     uint8_t u8Char;
-    while ( UCSR0A & (1<<RXC0) ) u8Char = UDR0;
+    while ( UCSR0A & (1<<RXC0) )
+        u8Char = UDR0;
+    (void)u8Char;
 
 }
 /**
@@ -205,7 +227,7 @@ int USART0_iReceiveByteForStream (FILE *stream)
     return u8Byte;
 }
 
-volatile uint8_t *pu8GetLineBuf(void)
+uint8_t * pu8GetLineBuf(void)
 {
     return stRXB.au8RXLineBuffer;
 }

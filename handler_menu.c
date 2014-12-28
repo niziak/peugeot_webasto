@@ -17,7 +17,21 @@
 #include <events.h>
 #include "temperature.h"
 #include <nvm.h>
+#include "tools.h"
 
+static void vShowStatus(void)
+{
+    LOG_NL;
+    LOG_P(PSTR("=== STATUS ===\n"));
+    TEMP_vCalculateCalibration();
+    TEMP_vReadTemperature();
+
+        //uint16_t                    auiExpectedPeriodsMS[MAX_PERIODS];
+    LOG_P(PSTR("Sleep when no pulses for...%d ms\n"), stSettings.u16IdleWhenNoPulsesMs);
+    LOG_P(PSTR("Pulse tolerance +/- .......%d ms\n"), stSettings.u16PulseLenToleranceMs);
+    LOG_P(PSTR("Heater turn ON time .......%d s\n"),  stSettings.u16HeaterEnabledForMin);
+    LOG_P(PSTR("Heater max ambient temp ...%d C\n"),  stSettings.s8HeaterEnableMaxTemperature);
+}
 
 void MENU_vHandleEvent(EVENT_DEF eEvent)
 {
@@ -27,6 +41,10 @@ void MENU_vHandleEvent(EVENT_DEF eEvent)
     }
     switch (eState)
     {
+        default:
+            RESET_P(PSTR("Unhandled state!"));
+            break;
+
         case ST_MENU_SHOW_MAIN:
             switch (eEvent)
             {
@@ -43,9 +61,12 @@ void MENU_vHandleEvent(EVENT_DEF eEvent)
                             LOG_P(PSTR("Heater is OFF\n"));
                             break;
                         case '3':
-                            LOG_P(PSTR(""\n));
+                            LOG_P(PSTR("\n"));
                             TEMP_vCalculateCalibration();
                             TEMP_vReadTemperature();
+                            break;
+                        case 'q':
+                            WdtResetHW();
                             break;
                     }
                     EventPost(EV_SHOW_MAIN_MENU);
@@ -57,10 +78,14 @@ void MENU_vHandleEvent(EVENT_DEF eEvent)
 
                 case EV_SHOW_MAIN_MENU:
                     LOG_NL;
+                    vShowStatus();
+
                     LOG_NL;
+                    LOG_P(PSTR("=== M E N U ===\n"));
                     LOG_P(PSTR("1. Turn heater ON\n"));
                     LOG_P(PSTR("2. Turn heater OFF\n"));
                     LOG_P(PSTR("3. Show temperature\n"));
+                    LOG_P(PSTR("q. Quit (reboot)\n"));
                     LOG_P(PSTR("\n"));
                     LOG_P(PSTR("Choice> "));
                     USART0_vRXWaitForLine();
