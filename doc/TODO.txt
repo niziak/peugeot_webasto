@@ -34,6 +34,12 @@ Software:
  
 
 Hardware:
+ - Webasto is turned on by shorting signal line to ground by ECU.
+   Webasto input shorted to ground takes 6mA only (at 12V it gives 2K Ohm internal pull-up)
+   The same ECU (Delhpi DCM3.5) port is used in P5008 to turn on electric heater by relay module BC3.
+   So it behave like open collector output with possibility to drive 12V relay.
+   
+   
  - Max input voltage for Arduino Nano clone is 15V, 7805 is needed
  - reduce current - change 7805 to LDO
     - LP2950CZ - LDO 100mA - Extremely Low Quiescent Current
