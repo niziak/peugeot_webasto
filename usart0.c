@@ -26,6 +26,9 @@ static RXB stRXB;
 static FILE USART0_stream = FDEV_SETUP_STREAM (USART0_iSendByteToStream, USART0_iReceiveByteForStream, _FDEV_SETUP_RW);
 
 
+/**
+ * Enable receiver and receive complete interrupt
+ */
 void USART0_vRXEnable(void)
 {
 
@@ -65,9 +68,16 @@ ISR(USART_RX_vect)
             }
             return; // ignore character (even do not echo)
             break;
-
-        default:
-            break;
+//TODO ignore escaped sequences like arrows
+//        case '\r':
+//            break;
+//
+//        default:
+//            if (u8Char>126)
+//                return; // ignore character (even do not echo)
+//            if (u8Char<32)
+//                return; // ignore character (even do not echo)
+//            break;
     }
 
     #if (1) // echo enabled
@@ -77,6 +87,16 @@ ISR(USART_RX_vect)
         //USART0_vSendByte (u8Char);
     }
     #endif
+
+    // do not store \r into line buffer
+    // check end of line, before storing it into buffer
+    if (u8Char == '\r')
+    {
+        USART0_RXDisable();
+        stRXB.au8RXLineBuffer[stRXB.u8NextWritePos] = 0; // null terminator
+        EventPostFromIRQ(EV_UART_LINE_COMPLETE);
+        return;
+    }
 
     // write if there is space in buffer
     if (stRXB.u8NextWritePos < sizeof(stRXB.au8RXLineBuffer))
@@ -88,16 +108,8 @@ ISR(USART_RX_vect)
     {
         USART0_RXDisable();
         EventPostFromIRQ(EV_UART_LINE_FULL);
+        return;
     }
-
-    // check end of line
-    if (u8Char == '\r')
-    {
-        USART0_RXDisable();
-        stRXB.au8RXLineBuffer[stRXB.u8NextWritePos] = 0; // null terminator
-        EventPostFromIRQ(EV_UART_LINE_COMPLETE);
-    }
-
 }
 
 

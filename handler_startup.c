@@ -24,6 +24,10 @@ void STARTUP_vHandleEvent(EVENT_DEF eEvent)
 {
            switch (eState)
            {
+               default:
+                   RESET_P("Unknown state!");
+                   break;
+
                case ST_CHECK_FOR_MENU_ENTER:
                    LOG_P(PSTR("\n\nPress ENTER twice for menu... "));
                    USART0_vRXWaitForLine();

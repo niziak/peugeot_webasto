@@ -11,6 +11,7 @@
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
+#include <util/atomic.h>
 
 #include <stdio.h>
 
@@ -21,6 +22,10 @@
 #include "globals.h"
 #include "usart0.h"
 
+/**
+ * Disable watchdog, and go to power down mode (only external INT can wake-up)
+ *
+ */
 void vWaitForNextSeries(void)
 {
     TIMER1_vStop();
@@ -41,12 +46,11 @@ void vWaitForNextSeries(void)
 
     wdt_enable(WDTO_2S);
     wdt_reset();
-    cli();
-
-    ulSystemTickMS = 0;
-
-    TIMER0_vInit();
-    sei();
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        ulSystemTickMS = 0;
+        TIMER0_vInit();
+    }
 
     LOG_P(PSTR("Line change - back from power down mode!\n"));
 }

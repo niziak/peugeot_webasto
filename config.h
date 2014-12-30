@@ -3,20 +3,24 @@
 
 // Arduino Nano LED connected to D13/PB5/SCK and ground
 #define ARDUINO_LED_SETUP	{ DDRB  |=  _BV(DDB5); }
-#define ARDUINO_LED_ON		{ PORTB |=  _BV(PB5); }
-#define ARDUINO_LED_OFF		{ PORTB &= ~_BV(PB5); }
-#define ARDUINO_LED_ALTER	{ PORTB ^=  _BV(PB5); }
+#define ARDUINO_LED_ON		{ PORTB |=  _BV(PB5);  }
+#define ARDUINO_LED_OFF		{ PORTB &= ~_BV(PB5);  }
+#define ARDUINO_LED_ALTER	{ PORTB ^=  _BV(PB5);  }
 
 // Webasto start is D9  (PB1 OC1A / PCINT1)
 #define WEBASTO_PIN_SETUP   { DDRB  |=  _BV(DDB1); }
-#define WEBASTO_PIN_ON      { PORTB |=  _BV(PB1); }
-#define WEBASTO_PIN_OFF     { PORTB &= ~_BV(PB1); }
-#define WEBASTO_PIN_ALTER   { PORTB ^=  _BV(PB1); }
+#define WEBASTO_PIN_ON      { PORTB |=  _BV(PB1);  }
+#define WEBASTO_PIN_OFF     { PORTB &= ~_BV(PB1);  }
+#define WEBASTO_PIN_ALTER   { PORTB ^=  _BV(PB1);  }
 
-#define HEATER_ON           WEBASTO_PIN_OFF
-#define HEATER_OFF          WEBASTO_PIN_ON
+#define HEATER_ON           { ARDUINO_LED_ON;  WEBASTO_PIN_ON;  }
+#define HEATER_OFF          { ARDUINO_LED_OFF; WEBASTO_PIN_OFF; }
 
-
+// state of Webasto ECU line is on (D2 / PD2)
+#define WEBASTO_STATE_PIN_SETUP   { DDRD  &=  ~_BV(DDD2); }
+#define WEBASTO_STATE_PIN_GET     ( PIND  & _BV(PD2) )
+#define WEBASTO_STATE_GET         ((WEBASTO_STATE_PIN_GET==0) ? 1 : 0 )
+#define WEBASTO_STATE_GET_STR     ((WEBASTO_STATE_PIN_GET==0) ? "ON" : "OFF" )
 
 
 #define TIMER1_TICK_US                  64      ///< One T1 count = 64us

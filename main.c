@@ -42,6 +42,15 @@ void main(void) __attribute__ ((noreturn));
 void main(void)
 {
     wdt_enable(WDTO_2S);
+    MCUSR |= _BV(PUD); // disable all pull-ups
+    // after power up, all ports are tri-state: DDR=0 PORT=0
+    // to prevent from floating, better is to set all ports to LOW
+    //
+    // to put pin into HI state, first change DDR=1 then PORT=1
+
+    DDRB = 0xFF; PORTB=0;
+    DDRC = 0xFF; PORTC=0;
+    DDRD = 0xFF; PORTD=0;
 
     WEBASTO_PIN_SETUP;
     HEATER_OFF;
@@ -49,8 +58,11 @@ void main(void)
     ARDUINO_LED_SETUP;
     ARDUINO_LED_ON;
 
-	DDRB   &= ~ _BV(PB0);     // DDR=0 = input port
-	PORTB  |=   _BV(PB0);     // enable pull up		//TODO remove in final to prevent current consumption
+    WEBASTO_STATE_PIN_SETUP;
+
+	// PB0 into Input Tri-state (pin is externally pulled down by voltage divider)
+    DDRB   &= ~ _BV(PB0);     // DDR=0 = input port
+    PORTB  &= ~ _BV(PB0);     // PORT=0 = disable pull-up
 
 	USART0_vInit();
 
@@ -112,12 +124,10 @@ void main(void)
         if (uiHeaterSwitchOffAfterS>0)
         {
             HEATER_ON
-            ARDUINO_LED_ON
         }
         else
         {
             HEATER_OFF
-            ARDUINO_LED_OFF
         }
 //		printf("\n");
 

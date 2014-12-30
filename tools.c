@@ -8,7 +8,10 @@
 #include <avr/sleep.h>
 #include <avr/wdt.h>
 #include <avr/interrupt.h>
+#include <avr/pgmspace.h>
+
 #include <config.h>
+#include "log.h"
 
 static volatile BOOL bStop;
 
@@ -82,7 +85,8 @@ void WdtDisable(void)
  */
 void WdtResetHW(void)
 {
+    LOG_P(PSTR("RESET!\n"));
     cli();
-    wdt_enable(WDTO_2S);
+    wdt_enable(WDTO_500MS);
     for (;;); // real reset
 }

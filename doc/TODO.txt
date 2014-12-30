@@ -1,27 +1,5 @@
 Software:
- - how to deal with blocking input and event processing (fifo overflow)
-   - shared input characters buffer (16 characters buffer is enough for numbers)
-   - IRQ driven buffer UART RX 
-   - no scanf possible on stdin!!! Instead scanf:
-      - show user string and ask for value
-      - enable buffered RX subsystem (ignore pending input, clear buffer), 
-        switch to waiting state and wait for event <-- app is not blocked
-   
-   - buffered uart RX in IRQ
-      - collect characters until:
-          - '\n' will send event like input string ready
-          - buffer overflow will send overflow event - should be treated as input garbage
-      - RX subsystem will be paused to prevent any character processing
-   - after event, app should perfrom sscanf on shared buffer
-    
-   - put non blocking menu handler into main app event handler
-   - design menu handler as state machine
-   - possible to redraw screen - in given state (because debug infos are destroing menu)
-      - so also partial input buffer should be redraw, if user is just typing during screen redraw
-      - maybe SHIFT+R will always send redraw event ?
-      - for redraw we need current state and previous (current is waiting for input, previous was presenting question for user)
-         - or provide 2 handlers per state (show_question(state) and wait_for_input(state) )
-
+ - voltage measurement to detect if engine is running and stop handling heater
 
  - eeprom settings for pattern and temperature calibration
  
@@ -32,6 +10,8 @@ Software:
  - inlining 
  - reduce printf/scanf sizes
  
+ - disable pullups and unused ports
+ 
 
 Hardware:
  - Webasto is turned on by shorting signal line to ground by ECU.
@@ -39,22 +19,38 @@ Hardware:
    The same ECU (Delhpi DCM3.5) port is used in P5008 to turn on electric heater by relay module BC3.
    So it behave like open collector output with possibility to drive 12V relay.
    
-   
- - Max input voltage for Arduino Nano clone is 15V, 7805 is needed
- - reduce current - change 7805 to LDO
-    - LP2950CZ - LDO 100mA - Extremely Low Quiescent Current
-    - LM2936-5.0 - LDO 50mA
-	
  - how to send confirmation to user - blink turning light. 
    All bulbs are connected to common ground. BSM-PSF1 is giving +12V to enable light.
    Relay or IRFZ44 (requires at least 10V on gate)
    
  - turnlight through 22k resistor and 4v7 zener to ground + diode to plus
- 
+   
+Hardware - power consumption:   
+ - Max input voltage for Arduino Nano clone is 15V, 7805 is needed
+ - reduce current - change 7805 to LDO
+    - LP2950CZ - LDO 100mA - Extremely Low Quiescent Current
+    - LM2936-5.0 - LDO 50mA
+	- LM2937     - LDO 500mA
+ - reduce power consumption - don't use Arduino board or use with external
+   voltage regulator and disconnected power led
+ - reduce power consumption - voltage dividers like (1M/470k) (1M/100k) + 100nF, or use N-MOSFET to switch on power supply during measure
  - 2 5V relay module takes 60mA per relay
+ - Max power consumption
+    - 60 mA 1 relay at 5V
+    - 30 mA CH340 USB-to-Serial converter when working (5V suspend 0,2mA)
+    - 6  mA takes 7809 - a lot!
+    
  
+Hardware - input ports protection / power supply voltage protections (http://www.megamanual.com/357/hardware.htm)
+ - "it is not recommended that the clamping diodes are conducting more than maximum 1 mA" 
+ - http://www.opencircuits.com/Input_protection
+ - Atmega328 internal pull-up is 20-50kOhm
+ - Atmega protection diodes are for 0,5mA
+    max input voltage 15V - 5V Vcc, 10V to reduce at 0,5mA = 20kOhm in series without additional protection diodes to +5V.
+    Worst case 30V difference at 0,5mA = 60kOhm in series
+    R > (Vmax - Vcpu)/0,0005
  
-Max power consumption
- - 60 mA 1 relay at 5V
- - 30 mA CH340 USB-to-Serial converter when working (5V suspend 0,2mA)
- - 
+ - clamping diodes to 5V are not enough - in power down mode, cpu takes microamps, and there is no receiver of overvoltage.
+   Each line should be protected by 22kOhm resistor and schotky diode to common positive bus which is protected by zener. 
+   Arduino 5V supply cannot be used as protection bus. E.g. with 5V6 zener + 0,3V at Schotky = 6V. Atmeaga max voltage is 5,5V. 
+  

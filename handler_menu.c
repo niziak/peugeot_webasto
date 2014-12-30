@@ -6,9 +6,13 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <avr/io.h>
 #include <avr/wdt.h>
+#include <avr/sleep.h>
+#include <avr/interrupt.h>
+#include <util/delay.h>
 #include "types.h"
 #include "globals.h"
 #include "log.h"
@@ -18,6 +22,44 @@
 #include "temperature.h"
 #include <nvm.h>
 #include "tools.h"
+#include "pulse_det.h"
+
+
+void TEMP_vReadCalibrationDataFromConsole(void)
+{
+    TEMP_vPrintCalibrationData();
+    int status;
+
+    for (uint8_t i=0; i<TEMP_CALIB_POINTS; i++)
+    {
+        LOG_NL;
+        do
+        {
+            LOG_P(PSTR("\t#%d new RAW="),i );
+            status = scanf("%d", &pstSettings->astTempCal[i].s16ADCTemp);
+            LOG_P(PSTR("Scanf returns %d value is %d\n"), status, pstSettings->astTempCal[i].s16ADCTemp);
+            if (status !=1 )
+            {
+                LOG_P(PSTR("consumed char=0x%02X\n"), getchar());
+            }
+        } while (status != 1);
+        _delay_ms(5000);
+        LOG_P(PSTR("\t#%d new   T="),i ); status = scanf("%d", &pstSettings->astTempCal[i].s8RealTemp);
+        LOG_P(PSTR("Scanf returns %d value is %d\n"), status, pstSettings->astTempCal[i].s8RealTemp);
+    }
+    LOG_NL;
+}
+
+int16_t s16GetIntFromString(uint8_t *pu8String)
+{
+    pu8String++;
+    if (*pu8String != '=')
+    {
+        return 0; // TODO error handling
+    }
+    pu8String+=2; // skip 'A='
+    return atoi((const char*)pu8String); //TODO sth better
+}
 
 static void vShowStatus(void)
 {
@@ -27,15 +69,33 @@ static void vShowStatus(void)
     TEMP_vReadTemperature();
 
         //uint16_t                    auiExpectedPeriodsMS[MAX_PERIODS];
-    LOG_P(PSTR("Sleep when no pulses for...%d ms\n"), stSettings.u16IdleWhenNoPulsesMs);
-    LOG_P(PSTR("Pulse tolerance +/- .......%d ms\n"), stSettings.u16PulseLenToleranceMs);
-    LOG_P(PSTR("Heater turn ON time .......%d s\n"),  stSettings.u16HeaterEnabledForMin);
-    LOG_P(PSTR("Heater max ambient temp ...%d C\n"),  stSettings.s8HeaterEnableMaxTemperature);
+    LOG_P(PSTR("Heater is ..........................%s\n"), WEBASTO_STATE_GET_STR);
+    LOG_NL;
+    LOG_P(PSTR("=== SETTINGS ===\n"));
+    LOG_P(PSTR("A. Sleep when no pulses for ........%d ms\n"),  stSettings.u16IdleWhenNoPulsesMs);
+    LOG_P(PSTR("B. Pulse tolerance +/- .............%d ms\n"),  stSettings.u16PulseLenToleranceMs);
+    LOG_P(PSTR("C. Heater turn ON time .............%d min\n"), stSettings.u16HeaterEnabledForMin);
+    LOG_P(PSTR("D. Heater max ambient temp .........%d C\n"),   stSettings.s8HeaterEnableMaxTemperature);
 }
+
+static void vShowMenu(void)
+{
+    LOG_P(PSTR("=== M E N U ===\n"));
+    LOG_P(PSTR("1. Turn heater ON\n"));
+    LOG_P(PSTR("2. Turn heater OFF\n"));
+    LOG_P(PSTR("3. New temperature calibration values\n"));
+    LOG_P(PSTR("4. New pulse pattern\n"));
+    LOG_P(PSTR("S. Save settings\n"));
+    LOG_P(PSTR("p. Never ended sleep (power down)\n"));
+    LOG_P(PSTR("q. Quit (reboot)\n"));
+    LOG_P(PSTR("ENTER. refresh\n"));
+}
+
+
 
 void MENU_vHandleEvent(EVENT_DEF eEvent)
 {
-    if (eEvent == EV_SHOW_MAIN_MENU) // initialisation event
+    if (eEvent == EV_SHOW_MAIN_MENU) // Initialization event
     {
         eState = ST_MENU_SHOW_MAIN;
     }
@@ -52,6 +112,19 @@ void MENU_vHandleEvent(EVENT_DEF eEvent)
                     DEBUG_MEM(pu8GetLineBuf(), UART_RX_LINE_BUFFER);
                     switch (*pu8GetLineBuf())
                     {
+                        case 'A':
+                            stSettings.u16IdleWhenNoPulsesMs = (uint16_t)s16GetIntFromString(pu8GetLineBuf());
+                            break;
+                        case 'B':
+                            stSettings.u16PulseLenToleranceMs = (uint16_t)s16GetIntFromString(pu8GetLineBuf());
+                            break;
+                        case 'C':
+                            stSettings.u16HeaterEnabledForMin =  (uint16_t)s16GetIntFromString(pu8GetLineBuf());
+                            break;
+                        case 'D':
+                            stSettings.s8HeaterEnableMaxTemperature = s16GetIntFromString(pu8GetLineBuf());
+                            break;
+
                         case '1':
                             uiHeaterSwitchOffAfterS = 1;
                             LOG_P(PSTR("Heater is ON\n"));
@@ -65,6 +138,23 @@ void MENU_vHandleEvent(EVENT_DEF eEvent)
                             TEMP_vCalculateCalibration();
                             TEMP_vReadTemperature();
                             break;
+
+                        case '4':
+                            vWaitForNextSeries();
+                            break;
+
+                        case 'S':
+                            NVM_vSaveSettings();
+                            break;
+
+                        case 'p':
+                            USART0_vRXWaitForLine();
+                            set_sleep_mode (SLEEP_MODE_PWR_DOWN);
+                            wdt_disable();
+                            cli();
+                            sleep_mode(); // <--- POWER DOWN
+                            break;
+
                         case 'q':
                             WdtResetHW();
                             break;
@@ -79,13 +169,8 @@ void MENU_vHandleEvent(EVENT_DEF eEvent)
                 case EV_SHOW_MAIN_MENU:
                     LOG_NL;
                     vShowStatus();
-
                     LOG_NL;
-                    LOG_P(PSTR("=== M E N U ===\n"));
-                    LOG_P(PSTR("1. Turn heater ON\n"));
-                    LOG_P(PSTR("2. Turn heater OFF\n"));
-                    LOG_P(PSTR("3. Show temperature\n"));
-                    LOG_P(PSTR("q. Quit (reboot)\n"));
+                    vShowMenu();
                     LOG_P(PSTR("\n"));
                     LOG_P(PSTR("Choice> "));
                     USART0_vRXWaitForLine();

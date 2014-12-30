@@ -42,7 +42,9 @@ void APP_vHandleEvent(EVENT_DEF eEvent)
             case EV_WAIT_FOR_PULSES:
                 uiHeaterSwitchOffAfterS = 0;
                 PIN_CHANGE_INT_ENABLE /// from now @ref uiIdleTimeMS is used for pulse detector
+                USART0_vRXWaitForLine(); // RX led is on without this
                 vWaitForNextSeries();
+                USART0_RXDisable();
                 break;
 
             case EV_CHECK_PATTERN:
