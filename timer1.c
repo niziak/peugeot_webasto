@@ -24,11 +24,13 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/pgmspace.h>
 #include <util/atomic.h>
 #include "types.h"
 #include "events.h"
 #include "timer1.h"
 #include "config.h"
+#include "log.h"
 #include <string.h>
 
 static volatile BOOL bRisingEdge;
@@ -58,7 +60,7 @@ ISR(TIMER1_CAPT_vect)
     if (ucWriteIndex == MAX_PERIODS)
     {
         ucWriteIndex = 0;
-        TIMER1_vStop();
+        //TODO TIMER1_vStop(); // not work from interrupt
         EventPostFromIRQ(EV_CHECK_PATTERN);
         return;
     }
@@ -79,6 +81,7 @@ ISR(TIMER1_CAPT_vect)
 
 void TIMER1_vInit(void)
 {
+    DEBUG_P(PSTR("---TIMER1_vInit\n"));
     TIMER1_vStop();
 
     ucWriteIndex = 0;
@@ -91,12 +94,14 @@ void TIMER1_vInit(void)
    	TIMSK1 |= (1<<ICIE1) | (1<<TOIE1); /* IC INT enable + Timer1 OVF INT enable */
 
     TCCR1B |= (   (1<<CS12) | (1<<CS10) /* Prescaler Fclk/1024 = START TIMER*/
-                | (1<<ICNC1)            /* IC noise canceller */
+                | (1<<ICNC1)            /* IC noise canceller: The filter function requires four successive equal valued
+                                           samples of the ICP1 pin for changing its output */
               );
 }
 
 void TIMER1_vStop(void)
 {
+    DEBUG_P(PSTR("---TIMER1_vStop\n"));
+	TIMSK1 &= ~ ( _BV(ICIE1) | _BV(TOIE1) ); /* IC INT disable + Timer1 OVF INT disable */
     TCCR1B = 0; /* stop Timer1 */
-	TIMSK1 &= ~ ((1<<ICIE1)|(1<<TOIE1)); /* IC INT disable + Timer1 OVF INT disable */
 }

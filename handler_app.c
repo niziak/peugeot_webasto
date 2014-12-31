@@ -6,6 +6,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 
 #include <avr/io.h>
 #include <avr/wdt.h>
@@ -20,6 +21,7 @@
 #include <stdio.h>
 #include "usart0.h"
 #include "adc.h"
+#include "timer1.h"
 
 #define PIN_CHANGE_INT_ENABLE       { PCICR  |=   _BV(PCIE0); PCMSK0 |=   _BV(PCINT0); }
 #define PIN_CHANGE_INT_DISABLE      { PCICR  &= ~ _BV(PCIE0); PCMSK0 &= ~ _BV(PCINT0); }
@@ -72,6 +74,7 @@ void APP_vHandleEvent(EVENT_DEF eEvent)
                 break;
 
             case EV_CHECK_PATTERN: // send from Timer1
+                TIMER1_vStop();
                 PIN_CHANGE_INT_DISABLE
                 if (bAnalyzeCollectedPulses())
                 {
@@ -81,6 +84,7 @@ void APP_vHandleEvent(EVENT_DEF eEvent)
                 {
                     EventPost(EV_WRONG_PATTERN);
                 }
+                //memset((uint16_t*)&(auiPeriods[0]), 0, sizeof(auiPeriods)); // invalidate collected pattern
                 break;
 
             case EV_GOOD_PATTERN:
@@ -134,7 +138,7 @@ void APP_vHandleEvent(EVENT_DEF eEvent)
 
                     uiHeaterSwitchOffAfterS--;
                     LOG_P(PSTR("\tHeater enabled for %d sec.\n"), uiHeaterSwitchOffAfterS);
-                    if (uiHeaterSwitchOffAfterS==0)
+                    if (uiHeaterSwitchOffAfterS == 0)
                     {
                         vStopWebasto();
                     }
