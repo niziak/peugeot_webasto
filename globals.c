@@ -17,8 +17,9 @@ volatile uint32_t      ulSystemTickS = 0;          ///< local time tick counter 
 
 volatile uint16_t      uiIdleTimeMS = IDLE_TIME_DISABLED;  ///<
 
-int16_t                iADCVal;
 uint16_t               uiHeaterSwitchOffAfterS;
+ int16_t                s16Temperature;
+uint16_t               u16CarVoltage;
 
 NVM_SET_DEF            stSettings;
 
@@ -58,6 +59,10 @@ void NVM_vSetDefaultValues(void)
     pstSettings->u16PulseLenToleranceMs         = PULSE_LEN_TOLERANCE_MS;
     pstSettings->u16HeaterEnabledForMin         = HEATER_ENABLED_FOR_MIN;
     pstSettings->s8HeaterEnableMaxTemperature   = HEATER_ENABLED_MAX_TEMPERATURE;
+
+    pstSettings->u16VoltageDividerRatio         = VOLTAGE_DIVIDER_RATIO;
+    pstSettings->u16VoltageWithEngine           = VOLTAGE_WITH_ENGINE;
+    pstSettings->u16VoltageMinimumLevel         = VOLTAGE_MINIMUM_LEVEL;
 
     pstSettings->astTempCal[0].s16ADCTemp       = TEMP_SENS_T1_ADC;
     pstSettings->astTempCal[0].s8RealTemp       = TEMP_SENS_T1_REAL;

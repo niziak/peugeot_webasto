@@ -47,7 +47,10 @@
 #define IDLE_WHEN_NO_PULSES_MS          2000     ///< maximum pulse time in ms (max 4000!)
 #define PULSE_LEN_TOLERANCE_MS          50       ///< maximum pulse length difference (plus/ minux)
 #define HEATER_ENABLED_FOR_MIN          15       ///< 15 minutes
-#define HEATER_ENABLED_MAX_TEMPERATURE  10       ///< in Celsius
+#define HEATER_ENABLED_MAX_TEMPERATURE  15       ///< in Celsius
+#define VOLTAGE_DIVIDER_RATIO           384      ///< in 1/100
+#define VOLTAGE_WITH_ENGINE             14000    ///< in mV
+#define VOLTAGE_MINIMUM_LEVEL           11000    ///< in mV
 
 
 #define TEMP_SENS_T1_ADC                336

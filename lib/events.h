@@ -45,6 +45,7 @@ typedef enum
 
     EV_READ_TEMPERATURE,
     EV_START_WEBASTO,
+    EV_STOP_WEBASTO,
 
 } EVENT_DEF;
 

@@ -12,10 +12,10 @@ extern volatile uint32_t      ulSystemTickMS;
 extern volatile uint32_t      ulSystemTickS;
 extern volatile uint16_t      uiIdleTimeMS;
 
-extern int16_t                iADCVal;
-extern uint16_t               uiHeaterSwitchOffAfterS;
 
-extern BOOL                   bInMenu;
+extern uint16_t               uiHeaterSwitchOffAfterS;
+extern  int16_t               s16Temperature;
+extern uint16_t               u16CarVoltage;
 
 #define IDLE_TIME_DISABLED  0xFFFF
 
@@ -33,15 +33,20 @@ typedef struct
 /** Structure to keep whole system settings */
 typedef struct
 {
-    uint16_t                    auiExpectedPeriodsMS[MAX_PERIODS];
-
     uint16_t                    u16IdleWhenNoPulsesMs;
     uint16_t                    u16PulseLenToleranceMs;
     uint16_t                    u16HeaterEnabledForMin;
     int8_t                      s8HeaterEnableMaxTemperature;
+    uint16_t                    u16VoltageDividerRatio;  ///< in 1/100 (e.g 3.87 should be 387)
+    uint16_t                    u16VoltageWithEngine;    ///< in mV voltage level when engine is running
+    uint16_t                    u16VoltageMinimumLevel;  ///< in mV critical voltage level
+    uint8_t                     aucSpare1[32];
 
     TEMP_CAL_DEF                astTempCal[TEMP_CALIB_POINTS];
+    TEMP_CAL_DEF                astTempCalSpare[8];
 
+    uint16_t                    auiExpectedPeriodsMS[MAX_PERIODS];
+    uint16_t                    auiExpectedPeriodsMSSpare[MAX_PERIODS];
     uint8_t                     aucSpare[32];
 } NVM_SET_DEF;
 

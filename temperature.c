@@ -65,13 +65,13 @@ void TEMP_vReadTemperature(void)
 {
     ADC_vReadADCAverage(ADC_TEMP, ADC_REF_11);
 
-    LOG_P(PSTR("Temperature: (RAW=%d) "), iADCVal);
+    s16Temperature  = u16ADCVal;
 
-    iADCVal -= TEMP_SENS_OFFSET;
-    iADCVal *= TEMP_SENS_GAIN_100;
-    iADCVal /= 100;
+    s16Temperature -= TEMP_SENS_OFFSET;
+    s16Temperature *= TEMP_SENS_GAIN_100;
+    s16Temperature /= 100;
 
-    LOG_P(PSTR("REAL=%d\n"), iADCVal);
+    LOG_P(PSTR("Temperature: %d (RAW=%d)\n"), s16Temperature, u16ADCVal);
 }
 
 

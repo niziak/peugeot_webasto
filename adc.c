@@ -18,12 +18,13 @@
 #include "log.h"
 #include "usart0.h"
 
+volatile uint16_t      u16ADCVal;
 
 ISR(ADC_vect)
 {
     // read ADCL first then ADCH
-    iADCVal  = ADCL;
-	iADCVal |= (ADCH<<8);
+    u16ADCVal  = ADCL;
+	u16ADCVal |= (ADCH<<8);
 }
 
 
@@ -91,25 +92,31 @@ void ADC_vReadADCAverage(ADC_CH_DEF eChannel, ADC_REF_DEF eReference)
           ADC_vStartNoiseReduction();
         #endif
         uiAvg  = (uiAvg * (i-1)); // restore total value from previous samples
-        uiAvg += iADCVal;         // add current sample
+        uiAvg += u16ADCVal;         // add current sample
         uiAvg /= i;               // divide by number of current sample
         //DEBUG_P(PSTR("ADC=%d avg=%d\n"), iADCVal, uiAvg);
     }
     ADC_vStop();
+    u16ADCVal = uiAvg;
 }
 
-void ADC_vGetVoltage(void)
+void ADC_vGetCarVoltage(void)
 {
     // switch port A2/PC2 to LOW, to enable voltage divider
     //VOLTAGE_DIVIDER_ENABLE
     ADC_vReadADCAverage(ADC3, ADC_REF_VCC);
     //VOLTAGE_DIVIDER_DISABLE
 
-    LOG_P(PSTR("Car voltage: (RAW=%d) "), iADCVal);
+    uint32_t u32Temp = 5000UL*u16ADCVal / 1023UL; // store result in mV (5V=5000mV)
+    // now in u32Temp is real voltage on ADC3 input
+    // multiply it by voltage divider factor (R1=22k R2=7,5K)
 
-//    iADCVal -= TEMP_SENS_OFFSET;
-//    iADCVal *= TEMP_SENS_GAIN_100;
-//    iADCVal /= 100;
+    //TODO calibration!
+    //u16CarVoltage = ( 7500UL / (22000UL+7500UL) ) / u32Temp;
+    //u16CarVoltage = (7500UL) / (u32Temp*(22000UL+7500UL));
 
-    LOG_P(PSTR("REAL=%d\n"), iADCVal);
+    //u16CarVoltage = u32Temp * 387UL / 100UL; // WORKS: 3.87 is real factor of my divider
+    u16CarVoltage = u32Temp * stSettings.u16VoltageDividerRatio / 100UL; // 3.87 is real factor of my divider
+
+    LOG_P(PSTR("Car voltage: %d mV (RAW=%d)\n"), u16CarVoltage, u16ADCVal);
 }

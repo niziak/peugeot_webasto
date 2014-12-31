@@ -69,7 +69,7 @@ static void vShowStatus(void)
     LOG_P(PSTR("=== STATUS ===\n"));
     TEMP_vCalculateCalibration();
     TEMP_vReadTemperature();
-    ADC_vGetVoltage();
+    ADC_vGetCarVoltage();
 
         //uint16_t                    auiExpectedPeriodsMS[MAX_PERIODS];
     LOG_P(PSTR("Heater is ..........................%s\n"), WEBASTO_STATE_GET_STR);
@@ -79,6 +79,9 @@ static void vShowStatus(void)
     LOG_P(PSTR("B. Pulse tolerance +/- .............%d ms\n"),  stSettings.u16PulseLenToleranceMs);
     LOG_P(PSTR("C. Heater turn ON time .............%d min\n"), stSettings.u16HeaterEnabledForMin);
     LOG_P(PSTR("D. Heater max ambient temp .........%d C\n"),   stSettings.s8HeaterEnableMaxTemperature);
+    LOG_P(PSTR("E. Voltage divider ratio ...........%d/100\n"), stSettings.u16VoltageDividerRatio);
+    LOG_P(PSTR("F. Voltage with engine .............%d mV\n"),  stSettings.u16VoltageWithEngine);
+    LOG_P(PSTR("G. Voltage minimum level ...........%d mV\n"),  stSettings.u16VoltageMinimumLevel);
 }
 
 static void vShowMenu(void)
@@ -89,9 +92,10 @@ static void vShowMenu(void)
     LOG_P(PSTR("3. New temperature calibration values\n"));
     LOG_P(PSTR("4. New pulse pattern\n"));
     LOG_P(PSTR("5. Show pulses\n"));
-    LOG_P(PSTR("V. Turn VDIV ON\n"));
-    LOG_P(PSTR("v. Turn VDIV OFF\n"));
+//    LOG_P(PSTR("V. Turn VDIV ON\n"));
+//    LOG_P(PSTR("v. Turn VDIV OFF\n"));
     LOG_P(PSTR("S. Save settings\n"));
+    LOG_P(PSTR("R. Factory defaults\n"));
     LOG_P(PSTR("p. Never ended sleep (power down)\n"));
     LOG_P(PSTR("q. Quit (reboot)\n"));
     LOG_P(PSTR("ENTER. refresh\n"));
@@ -134,6 +138,18 @@ void MENU_vHandleEvent(EVENT_DEF eEvent)
                             stSettings.s8HeaterEnableMaxTemperature = s16GetIntFromString(pu8GetLineBuf());
                             break;
 
+                        case 'E':
+                            stSettings.u16VoltageDividerRatio = s16GetIntFromString(pu8GetLineBuf());
+                            break;
+
+                        case 'F':
+                            stSettings.u16VoltageWithEngine = s16GetIntFromString(pu8GetLineBuf());
+                            break;
+
+                        case 'G':
+                            stSettings.u16VoltageMinimumLevel = s16GetIntFromString(pu8GetLineBuf());
+                            break;
+
                         case '1':
                             uiHeaterSwitchOffAfterS = 1;
                             LOG_P(PSTR("Heater is ON\n"));
@@ -158,12 +174,17 @@ void MENU_vHandleEvent(EVENT_DEF eEvent)
                             APP_vEnablePinChangeEvents();
                             break;
 
-                        case 'V':
-                            VOLTAGE_DIVIDER_ENABLE;
-                            break;
+//                        case 'V':
+//                            VOLTAGE_DIVIDER_ENABLE;
+//                            break;
+//
+//                        case 'v':
+//                            VOLTAGE_DIVIDER_DISABLE;
+//                            break;
 
-                        case 'v':
-                            VOLTAGE_DIVIDER_DISABLE;
+                        case 'R':
+                            NVM_vRestoreFactory();
+                            WdtResetHW();
                             break;
 
                         case 'S':

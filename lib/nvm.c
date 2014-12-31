@@ -59,12 +59,12 @@ void NVM_vLoadSettings(void)
 
     if (bError == TRUE)
     {
-        LOG_P(PSTR("No NVM\n"));
+        LOG_P(PSTR("\n\n!!! No NVM\n\n"));
         return;
     }
     eeprom_read_block ( pstSettings,                  &(NVM_stSettings),               sizeof(stSettings));
 
-    DEBUG_MEM( pstSettings,                  sizeof(stSettings));
+    //DEBUG_MEM( pstSettings,                  sizeof(stSettings));
 }
 
 /**
@@ -75,7 +75,7 @@ void NVM_vSaveSettings(void)
     uint8_t  aucMagic[NVM_MAGIC_LEN];
     uint16_t uiVersion = NVM_VERSION;
 
-    DEBUG_MEM( pstSettings,                  sizeof(stSettings));
+    //DEBUG_MEM( pstSettings,                  sizeof(stSettings));
 
     memset (&aucMagic[0], NVM_MAGIC_BYTE, sizeof (aucMagic));
 #if (AVRLIB_HAS_EEPROM_UPDATE_BLOCK_FN)
@@ -88,5 +88,5 @@ void NVM_vSaveSettings(void)
     eeprom_write_block ( pstSettings,                &(NVM_stSettings),               sizeof(stSettings));
 #endif
 
-    DEBUG_MEM( pstSettings,                  sizeof(stSettings));
+    //DEBUG_MEM( pstSettings,                  sizeof(stSettings));
 }

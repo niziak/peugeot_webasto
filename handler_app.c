@@ -19,6 +19,7 @@
 #include "pulse_det.h"
 #include <stdio.h>
 #include "usart0.h"
+#include "adc.h"
 
 #define PIN_CHANGE_INT_ENABLE       { PCICR  |=   _BV(PCIE0); PCMSK0 |=   _BV(PCINT0); }
 #define PIN_CHANGE_INT_DISABLE      { PCICR  &= ~ _BV(PCIE0); PCMSK0 &= ~ _BV(PCINT0); }
@@ -83,16 +84,15 @@ void APP_vHandleEvent(EVENT_DEF eEvent)
             case EV_READ_TEMPERATURE:
                 LOG_P(PSTR("Reading ambient temperature...\n"));
                 TEMP_vReadTemperature();
-                LOG_P(PSTR("Temp=%d\n"), iADCVal);
 
-                if (iADCVal > pstSettings->s8HeaterEnableMaxTemperature)
+                if (s16Temperature > pstSettings->s8HeaterEnableMaxTemperature)
                 {
-                        LOG_P(PSTR("Ambient temp %d > %d set. Nothing to do.\n"), iADCVal, pstSettings->s8HeaterEnableMaxTemperature);
+                        LOG_P(PSTR("Ambient temp %d > %d set. Nothing to do.\n"), s16Temperature, pstSettings->s8HeaterEnableMaxTemperature);
                         EventPost(EV_WAIT_FOR_PULSES);
                 }
                 else
                 {
-                        LOG_P(PSTR("Ambient temp %d <= %d set.\n"),iADCVal, pstSettings->s8HeaterEnableMaxTemperature);
+                        LOG_P(PSTR("Ambient temp %d <= %d set.\n"), s16Temperature, pstSettings->s8HeaterEnableMaxTemperature);
                         EventPost(EV_START_WEBASTO);
                 }
                 break;
@@ -102,16 +102,37 @@ void APP_vHandleEvent(EVENT_DEF eEvent)
                 uiHeaterSwitchOffAfterS = pstSettings->u16HeaterEnabledForMin * 60;
                 break;
 
+            case EV_STOP_WEBASTO:
+                LOG_P(PSTR("\n\n!!! Stopping heater!\n\n"));
+                uiHeaterSwitchOffAfterS = 0;
+                EventPost(EV_WAIT_FOR_PULSES);
+                break;
+
             case EV_CLOCK_1S:
                 wdt_reset();
                 if (uiHeaterSwitchOffAfterS>0)
                 {
+                    ADC_vGetCarVoltage();
+                    // check if voltage drops below critical level
+                    if (u16CarVoltage < stSettings.u16VoltageMinimumLevel)
+                    {
+                        LOG_P(PSTR("\n\n!!! Voltage too low!\n\n"));
+                        EventPost(EV_STOP_WEBASTO);
+                        break;
+                    }
+
+                    if (u16CarVoltage > stSettings.u16VoltageWithEngine)
+                    {
+                        LOG_P(PSTR("\n\n!!! Engine running!\n\n"));
+                        EventPost(EV_STOP_WEBASTO);
+                        break;
+                    }
+
                     uiHeaterSwitchOffAfterS--;
                     LOG_P(PSTR("\tHeater enabled for %d sec.\n"), uiHeaterSwitchOffAfterS);
                     if (uiHeaterSwitchOffAfterS==0)
                     {
-                        LOG_P(PSTR("\n\n!!! Stopping heater!\n\n"), uiHeaterSwitchOffAfterS);
-                        EventPost(EV_WAIT_FOR_PULSES);
+                        EventPost(EV_STOP_WEBASTO);
                     }
                 }
                 break;

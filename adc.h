@@ -35,6 +35,8 @@ typedef enum
     ADC_REF_11   = _BV(REFS1) | _BV(REFS0),  ///<  11    Internal 1.1V + ext cap
 } ADC_REF_DEF;
 
+extern volatile uint16_t               u16ADCVal;
+
 #define ADC_AVG_NUM_OF_SAMPLES 15
 
 extern void ADC_vPrepare (ADC_CH_DEF eChannel, ADC_REF_DEF eReference);
@@ -48,7 +50,7 @@ extern void ADC_vStop(void);
 
 extern void ADC_vReadADCAverage(ADC_CH_DEF eChannel, ADC_REF_DEF eReference);
 
-extern void ADC_vGetVoltage(void);
+extern void ADC_vGetCarVoltage(void);
 
 
 #endif /* ADC_H_ */
