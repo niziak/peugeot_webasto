@@ -54,6 +54,10 @@ void main(void)
     DIDR0 = 0xFF; // digital input buffer disable on ADC
     DIDR1 = 0xFF; // digital input buffer disable on analog comparator
 
+    // RX and TX into Tri state mode PD0 PD1
+    DDRD &= ~( _BV(DDD0) | _BV(DDD1) );
+
+
     VOLTAGE_ADC_PIN_SETUP;
     VOLTAGE_DIVIDER_PIN_SETUP;
     VOLTAGE_DIVIDER_ENABLE;
