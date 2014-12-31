@@ -54,6 +54,13 @@ void APP_vEnablePinChangeEvents(void)
     bSendPinChangeEvents = TRUE;
 }
 
+static void vStopWebasto(void)
+{
+    LOG_P(PSTR("\n\n!!! Stopping heater!\n\n"));
+    uiHeaterSwitchOffAfterS = 0;
+    EventPost(EV_WAIT_FOR_PULSES);
+}
+
 void APP_vHandleEvent(EVENT_DEF eEvent)
 {
     switch (eEvent)
@@ -97,17 +104,14 @@ void APP_vHandleEvent(EVENT_DEF eEvent)
                 }
                 break;
 
+            case EV_STOP_WEBASTO:
+                vStopWebasto();
+                break;
+
             case EV_START_WEBASTO:
                 LOG_P(PSTR("\n\n!!! Starting heater!\n\n"));
                 uiHeaterSwitchOffAfterS = pstSettings->u16HeaterEnabledForMin * 60;
-                break;
-
-            case EV_STOP_WEBASTO:
-                LOG_P(PSTR("\n\n!!! Stopping heater!\n\n"));
-                uiHeaterSwitchOffAfterS = 0;
-                EventPost(EV_WAIT_FOR_PULSES);
-                break;
-
+                //no break;
             case EV_CLOCK_1S:
                 wdt_reset();
                 if (uiHeaterSwitchOffAfterS>0)
@@ -117,14 +121,14 @@ void APP_vHandleEvent(EVENT_DEF eEvent)
                     if (u16CarVoltage < stSettings.u16VoltageMinimumLevel)
                     {
                         LOG_P(PSTR("\n\n!!! Voltage too low!\n\n"));
-                        EventPost(EV_STOP_WEBASTO);
+                        vStopWebasto();
                         break;
                     }
 
                     if (u16CarVoltage > stSettings.u16VoltageWithEngine)
                     {
                         LOG_P(PSTR("\n\n!!! Engine running!\n\n"));
-                        EventPost(EV_STOP_WEBASTO);
+                        vStopWebasto();
                         break;
                     }
 
@@ -132,7 +136,7 @@ void APP_vHandleEvent(EVENT_DEF eEvent)
                     LOG_P(PSTR("\tHeater enabled for %d sec.\n"), uiHeaterSwitchOffAfterS);
                     if (uiHeaterSwitchOffAfterS==0)
                     {
-                        EventPost(EV_STOP_WEBASTO);
+                        vStopWebasto();
                     }
                 }
                 break;
