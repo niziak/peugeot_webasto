@@ -41,7 +41,7 @@ void vGetOptibootMCUSR(void)
 void main(void) __attribute__ ((noreturn));
 void main(void)
 {
-    wdt_enable(WDTO_2S);
+    WdtEnable();
     MCUSR |= _BV(PUD); // disable all pull-ups
     // after power up, all ports are tri-state: DDR=0 PORT=0
     // to prevent from floating, better is to set all ports to LOW
@@ -51,6 +51,12 @@ void main(void)
     DDRB = 0xFF; PORTB=0;
     DDRC = 0xFF; PORTC=0;
     DDRD = 0xFF; PORTD=0;
+    DIDR0 = 0xFF; // digital input buffer disable on ADC
+    DIDR1 = 0xFF; // digital input buffer disable on analog comparator
+
+    VOLTAGE_ADC_PIN_SETUP;
+    VOLTAGE_DIVIDER_PIN_SETUP;
+    VOLTAGE_DIVIDER_ENABLE;
 
     WEBASTO_PIN_SETUP;
     HEATER_OFF;

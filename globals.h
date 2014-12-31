@@ -12,7 +12,7 @@ extern volatile uint32_t      ulSystemTickMS;
 extern volatile uint32_t      ulSystemTickS;
 extern volatile uint16_t      uiIdleTimeMS;
 
-extern int16_t                iTemp;
+extern int16_t                iADCVal;
 extern uint16_t               uiHeaterSwitchOffAfterS;
 
 extern BOOL                   bInMenu;

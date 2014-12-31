@@ -27,13 +27,14 @@ typedef enum
 
     EV_CLOCK_1S,              ///< every one second
     EV_GUI_TIMEOUT,
-
+    EV_PIN_CHANGED_H,
+    EV_PIN_CHANGED_L,
 
     EV_UART_LINE_COMPLETE = 0x20,
     EV_UART_LINE_FULL,
 
 
-    EV_SHOW_MAIN_MENU = 0x30,
+    EV_SHOW_MAIN_MENU     = 0x30,
 
 
     EV_CHECK_PATTERN      = 0x80,

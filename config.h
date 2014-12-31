@@ -22,6 +22,12 @@
 #define WEBASTO_STATE_GET         ((WEBASTO_STATE_PIN_GET==0) ? 1 : 0 )
 #define WEBASTO_STATE_GET_STR     ((WEBASTO_STATE_PIN_GET==0) ? "ON" : "OFF" )
 
+// PC2 is connected to lower resistor of voltage divider
+#define VOLTAGE_DIVIDER_ENABLE      { PORTC &= ~ _BV(PC2); DDRC |= _BV(DDC2); }    // Output LOW  PORT=0 DDR=1
+#define VOLTAGE_DIVIDER_DISABLE     { DDRC  &= ~ _BV(DDC2); PORTC &= ~ _BV(PC2); } // Tri-state   DDR=0 PORT=0
+#define VOLTAGE_DIVIDER_PIN_SETUP   { VOLTAGE_DIVIDER_DISABLE } // Tri State
+
+#define VOLTAGE_ADC_PIN_SETUP       { DDRC  &= ~ _BV(DDC3); PORTC &= ~ _BV(PC3); } // Tri state
 
 #define TIMER1_TICK_US                  64      ///< One T1 count = 64us
 
@@ -39,7 +45,7 @@
  * NOTE: Also Timer1 overflow is used for maximum pulse time or idle time (4.19 second)
  */
 #define IDLE_WHEN_NO_PULSES_MS          2000     ///< maximum pulse time in ms (max 4000!)
-#define PULSE_LEN_TOLERANCE_MS          20       ///< maximum pulse length difference (plus/ minux)
+#define PULSE_LEN_TOLERANCE_MS          50       ///< maximum pulse length difference (plus/ minux)
 #define HEATER_ENABLED_FOR_MIN          15       ///< 15 minutes
 #define HEATER_ENABLED_MAX_TEMPERATURE  10       ///< in Celsius
 

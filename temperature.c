@@ -59,34 +59,19 @@ void TEMP_vCalculateCalibration(void)
     LOG_P(PSTR("Calibration offset=%d gain=%d/100\n"), s16Offset, s16Gain100);
 }
 
+
+
 void TEMP_vReadTemperature(void)
 {
-    ADC_vPrepare();
-    uint16_t uiAvg=0;
-    for (uint8_t i=1; i<15+1; i++)
-    {
-        //DEBUG_T_P(PSTR("Start ADC... "));
-        USART0_vFlush();
-        #if (0)
-          ADC_vStart();
-          ADC_vWait();
-        #else
-          ADC_vStartNoiseReduction();
-        #endif
-        uiAvg = (uiAvg*(i-1)); // restore total value from previous samples
-        uiAvg+= iTemp; // add current sample
-        uiAvg/= i; // divide by number of current sample
-        //DEBUG_P(PSTR("ADC=%d avg=%d\n"), iTemp, uiAvg);
-    }
-    ADC_vStop();
+    ADC_vReadADCAverage(ADC_TEMP, ADC_REF_11);
 
-    LOG_P(PSTR("Temperature: (RAW=%d) "), iTemp);
+    LOG_P(PSTR("Temperature: (RAW=%d) "), iADCVal);
 
-    iTemp -= TEMP_SENS_OFFSET;
-    iTemp *= TEMP_SENS_GAIN_100;
-    iTemp /= 100;
+    iADCVal -= TEMP_SENS_OFFSET;
+    iADCVal *= TEMP_SENS_GAIN_100;
+    iADCVal /= 100;
 
-    LOG_P(PSTR("REAL=%d\n"), iTemp);
+    LOG_P(PSTR("REAL=%d\n"), iADCVal);
 }
 
 

@@ -23,6 +23,8 @@
 #include <nvm.h>
 #include "tools.h"
 #include "pulse_det.h"
+#include "handler_app.h"
+#include "adc.h"
 
 
 void TEMP_vReadCalibrationDataFromConsole(void)
@@ -52,12 +54,12 @@ void TEMP_vReadCalibrationDataFromConsole(void)
 
 int16_t s16GetIntFromString(uint8_t *pu8String)
 {
-    pu8String++;
+    pu8String++; // skip 'A' from 'A=123'
     if (*pu8String != '=')
     {
         return 0; // TODO error handling
     }
-    pu8String+=2; // skip 'A='
+    pu8String++; // skip '=' from 'A=123'
     return atoi((const char*)pu8String); //TODO sth better
 }
 
@@ -67,6 +69,7 @@ static void vShowStatus(void)
     LOG_P(PSTR("=== STATUS ===\n"));
     TEMP_vCalculateCalibration();
     TEMP_vReadTemperature();
+    ADC_vGetVoltage();
 
         //uint16_t                    auiExpectedPeriodsMS[MAX_PERIODS];
     LOG_P(PSTR("Heater is ..........................%s\n"), WEBASTO_STATE_GET_STR);
@@ -85,6 +88,9 @@ static void vShowMenu(void)
     LOG_P(PSTR("2. Turn heater OFF\n"));
     LOG_P(PSTR("3. New temperature calibration values\n"));
     LOG_P(PSTR("4. New pulse pattern\n"));
+    LOG_P(PSTR("5. Show pulses\n"));
+    LOG_P(PSTR("V. Turn VDIV ON\n"));
+    LOG_P(PSTR("v. Turn VDIV OFF\n"));
     LOG_P(PSTR("S. Save settings\n"));
     LOG_P(PSTR("p. Never ended sleep (power down)\n"));
     LOG_P(PSTR("q. Quit (reboot)\n"));
@@ -95,7 +101,7 @@ static void vShowMenu(void)
 
 void MENU_vHandleEvent(EVENT_DEF eEvent)
 {
-    if (eEvent == EV_SHOW_MAIN_MENU) // Initialization event
+    if (eEvent == EV_SHOW_MAIN_MENU) // Initialisation event
     {
         eState = ST_MENU_SHOW_MAIN;
     }
@@ -115,12 +121,15 @@ void MENU_vHandleEvent(EVENT_DEF eEvent)
                         case 'A':
                             stSettings.u16IdleWhenNoPulsesMs = (uint16_t)s16GetIntFromString(pu8GetLineBuf());
                             break;
+
                         case 'B':
                             stSettings.u16PulseLenToleranceMs = (uint16_t)s16GetIntFromString(pu8GetLineBuf());
                             break;
+
                         case 'C':
                             stSettings.u16HeaterEnabledForMin =  (uint16_t)s16GetIntFromString(pu8GetLineBuf());
                             break;
+
                         case 'D':
                             stSettings.s8HeaterEnableMaxTemperature = s16GetIntFromString(pu8GetLineBuf());
                             break;
@@ -129,10 +138,12 @@ void MENU_vHandleEvent(EVENT_DEF eEvent)
                             uiHeaterSwitchOffAfterS = 1;
                             LOG_P(PSTR("Heater is ON\n"));
                             break;
+
                         case '2':
                             uiHeaterSwitchOffAfterS = 0;
                             LOG_P(PSTR("Heater is OFF\n"));
                             break;
+
                         case '3':
                             LOG_P(PSTR("\n"));
                             TEMP_vCalculateCalibration();
@@ -143,14 +154,26 @@ void MENU_vHandleEvent(EVENT_DEF eEvent)
                             vWaitForNextSeries();
                             break;
 
+                        case '5':
+                            APP_vEnablePinChangeEvents();
+                            break;
+
+                        case 'V':
+                            VOLTAGE_DIVIDER_ENABLE;
+                            break;
+
+                        case 'v':
+                            VOLTAGE_DIVIDER_DISABLE;
+                            break;
+
                         case 'S':
                             NVM_vSaveSettings();
                             break;
 
                         case 'p':
-                            USART0_vRXWaitForLine();
+                            //USART0_vRXWaitForLine();
                             set_sleep_mode (SLEEP_MODE_PWR_DOWN);
-                            wdt_disable();
+                            WdtDisable();
                             cli();
                             sleep_mode(); // <--- POWER DOWN
                             break;
@@ -174,6 +197,14 @@ void MENU_vHandleEvent(EVENT_DEF eEvent)
                     LOG_P(PSTR("\n"));
                     LOG_P(PSTR("Choice> "));
                     USART0_vRXWaitForLine();
+                    break;
+
+                case EV_PIN_CHANGED_L:
+                    LOG_P(PSTR(" 0\n"));
+                    break;
+
+                case EV_PIN_CHANGED_H:
+                    LOG_P(PSTR(" 1\n"));
                     break;
 
                 case EV_CLOCK_1S:

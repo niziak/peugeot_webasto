@@ -17,7 +17,7 @@ volatile uint32_t      ulSystemTickS = 0;          ///< local time tick counter 
 
 volatile uint16_t      uiIdleTimeMS = IDLE_TIME_DISABLED;  ///<
 
-int16_t                iTemp;
+int16_t                iADCVal;
 uint16_t               uiHeaterSwitchOffAfterS;
 
 NVM_SET_DEF            stSettings;

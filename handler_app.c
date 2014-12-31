@@ -23,6 +23,7 @@
 #define PIN_CHANGE_INT_ENABLE       { PCICR  |=   _BV(PCIE0); PCMSK0 |=   _BV(PCINT0); }
 #define PIN_CHANGE_INT_DISABLE      { PCICR  &= ~ _BV(PCIE0); PCMSK0 &= ~ _BV(PCINT0); }
 
+static volatile BOOL bSendPinChangeEvents = FALSE;
 /**
  * ISR for PCINT0
  * PCINT[7:0] are serviced by PCINT0_vect
@@ -33,6 +34,23 @@ ISR(PCINT0_vect)
     {
         uiIdleTimeMS = 0;
     }
+    if (bSendPinChangeEvents)
+    {
+        if (bit_is_set(PINB, PINB0))
+        {
+            EventPostFromIRQ(EV_PIN_CHANGED_H);
+        }
+        else
+        {
+            EventPostFromIRQ(EV_PIN_CHANGED_L);
+        }
+    }
+}
+
+void APP_vEnablePinChangeEvents(void)
+{
+    PIN_CHANGE_INT_ENABLE;
+    bSendPinChangeEvents = TRUE;
 }
 
 void APP_vHandleEvent(EVENT_DEF eEvent)
@@ -42,12 +60,11 @@ void APP_vHandleEvent(EVENT_DEF eEvent)
             case EV_WAIT_FOR_PULSES:
                 uiHeaterSwitchOffAfterS = 0;
                 PIN_CHANGE_INT_ENABLE /// from now @ref uiIdleTimeMS is used for pulse detector
-                USART0_vRXWaitForLine(); // RX led is on without this
                 vWaitForNextSeries();
-                USART0_RXDisable();
                 break;
 
-            case EV_CHECK_PATTERN:
+            case EV_CHECK_PATTERN: // send from Timer1
+                PIN_CHANGE_INT_DISABLE
                 if (bAnalyzeCollectedPulses())
                 {
                     EventPost(EV_GOOD_PATTERN);
@@ -59,29 +76,29 @@ void APP_vHandleEvent(EVENT_DEF eEvent)
                 break;
 
             case EV_GOOD_PATTERN:
-                LOG_P(PSTR("Pattern match.\n"));
+                LOG_P(PSTR("\n\n!!! Pattern match.\n\n"));
                 EventPost(EV_READ_TEMPERATURE);
                 break;
 
             case EV_READ_TEMPERATURE:
                 LOG_P(PSTR("Reading ambient temperature...\n"));
                 TEMP_vReadTemperature();
-                LOG_P(PSTR("Temp=%d\n"), iTemp);
+                LOG_P(PSTR("Temp=%d\n"), iADCVal);
 
-                if (iTemp > pstSettings->s8HeaterEnableMaxTemperature)
+                if (iADCVal > pstSettings->s8HeaterEnableMaxTemperature)
                 {
-                        LOG_P(PSTR("Ambient temp %d > %d set. Nothing to do.\n"), iTemp, pstSettings->s8HeaterEnableMaxTemperature);
+                        LOG_P(PSTR("Ambient temp %d > %d set. Nothing to do.\n"), iADCVal, pstSettings->s8HeaterEnableMaxTemperature);
                         EventPost(EV_WAIT_FOR_PULSES);
                 }
                 else
                 {
-                        LOG_P(PSTR("Ambient temp %d <= %d set.\n"),iTemp, pstSettings->s8HeaterEnableMaxTemperature);
+                        LOG_P(PSTR("Ambient temp %d <= %d set.\n"),iADCVal, pstSettings->s8HeaterEnableMaxTemperature);
                         EventPost(EV_START_WEBASTO);
                 }
                 break;
 
             case EV_START_WEBASTO:
-                LOG_P(PSTR("Starting heater!\n"));
+                LOG_P(PSTR("\n\n!!! Starting heater!\n\n"));
                 uiHeaterSwitchOffAfterS = pstSettings->u16HeaterEnabledForMin * 60;
                 break;
 
@@ -93,7 +110,7 @@ void APP_vHandleEvent(EVENT_DEF eEvent)
                     LOG_P(PSTR("\tHeater enabled for %d sec.\n"), uiHeaterSwitchOffAfterS);
                     if (uiHeaterSwitchOffAfterS==0)
                     {
-                     LOG_P(PSTR("\tStopping heater!\n"), uiHeaterSwitchOffAfterS);
+                        LOG_P(PSTR("\n\n!!! Stopping heater!\n\n"), uiHeaterSwitchOffAfterS);
                         EventPost(EV_WAIT_FOR_PULSES);
                     }
                 }
@@ -113,6 +130,7 @@ void APP_vHandleEvent(EVENT_DEF eEvent)
             case EV_UART_LINE_FULL:
                 DEBUG_MEM(pu8GetLineBuf(), UART_RX_LINE_BUFFER);
                 break;
+
             default:
                 RESET_P(PSTR("unh event!"));
                 break;

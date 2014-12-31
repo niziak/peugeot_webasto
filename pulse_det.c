@@ -21,6 +21,7 @@
 #include "log.h"
 #include "globals.h"
 #include "usart0.h"
+#include "tools.h"
 
 /**
  * Disable watchdog, and go to power down mode (only external INT can wake-up)
@@ -28,6 +29,7 @@
  */
 void vWaitForNextSeries(void)
 {
+    //USART0_vRXWaitForLine(); // RX led is on without this
     TIMER1_vStop();
     LOG_P(PSTR("Waiting for external event (power down)...\n"));
     for (uint8_t i=0; i<10; i++)
@@ -40,12 +42,13 @@ void vWaitForNextSeries(void)
     sei();
     // Go into very deep sleep, waiting only for external interrupt on PCINT0 (PB0)
     set_sleep_mode (SLEEP_MODE_PWR_DOWN); // wait for int (1ms timer)
-    wdt_disable();
+    WdtDisable();
 
     sleep_mode(); // <--- POWER DOWN
 
-    wdt_enable(WDTO_2S);
     wdt_reset();
+    WdtEnable();
+
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
         ulSystemTickMS = 0;
@@ -53,6 +56,7 @@ void vWaitForNextSeries(void)
     }
 
     LOG_P(PSTR("Line change - back from power down mode!\n"));
+    //USART0_RXDisable();
 }
 
 

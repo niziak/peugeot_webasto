@@ -9,6 +9,7 @@
 #define HANDLER_APP_H_
 
 extern void APP_vHandleEvent(EVENT_DEF eEvent);
+extern void APP_vEnablePinChangeEvents(void);
 
 
 
