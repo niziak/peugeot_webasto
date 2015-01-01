@@ -51,6 +51,7 @@ extern void ADC_vStop(void);
 extern void ADC_vReadADCAverage(ADC_CH_DEF eChannel, ADC_REF_DEF eReference);
 
 extern void ADC_vGetCarVoltage(void);
+extern void ADC_vPrintCarVoltage(void);
 
 
 #endif /* ADC_H_ */

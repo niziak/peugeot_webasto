@@ -13,5 +13,6 @@ extern void TEMP_vPrintCalibrationData(void);
 extern void TEMP_vReadCalibrationDataFromConsole(void);
 extern void TEMP_vCalculateCalibration(void);
 extern void TEMP_vReadTemperature(void);
+extern void TEMP_vPrintTemperature(void);
 
 #endif /* TEMPERATURE_H_ */

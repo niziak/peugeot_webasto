@@ -32,12 +32,11 @@
 #include "config.h"
 #include "log.h"
 #include <string.h>
+#include "pulse_det.h"
 
 static volatile BOOL bRisingEdge;
 
 
-volatile uint16_t auiPeriods[MAX_PERIODS];
-volatile uint8_t  ucWriteIndex;
 
 #define T1_IC_SET_RISING  { TCCR1B |=   (1<<ICES1); }
 #define T1_IC_SET_FALLING { TCCR1B &= ~ (1<<ICES1); }
@@ -81,11 +80,10 @@ ISR(TIMER1_CAPT_vect)
 
 void TIMER1_vInit(void)
 {
-    DEBUG_P(PSTR("---TIMER1_vInit\n"));
+    //DEBUG_P(PSTR("---TIMER1_vInit\n"));
     TIMER1_vStop();
 
-    ucWriteIndex = 0;
-    memset((uint16_t*)&(auiPeriods[0]), 0, sizeof(auiPeriods));
+    PD_vClearStoredPattern();
 
    	bRisingEdge = TRUE;
    	T1_IC_SET_RISING
@@ -101,7 +99,7 @@ void TIMER1_vInit(void)
 
 void TIMER1_vStop(void)
 {
-    DEBUG_P(PSTR("---TIMER1_vStop\n"));
+    //DEBUG_P(PSTR("---TIMER1_vStop\n"));
 	TIMSK1 &= ~ ( _BV(ICIE1) | _BV(TOIE1) ); /* IC INT disable + Timer1 OVF INT disable */
     TCCR1B = 0; /* stop Timer1 */
 }

@@ -117,6 +117,9 @@ void ADC_vGetCarVoltage(void)
 
     //u16CarVoltage = u32Temp * 387UL / 100UL; // WORKS: 3.87 is real factor of my divider
     u16CarVoltage = u32Temp * stSettings.u16VoltageDividerRatio / 100UL; // 3.87 is real factor of my divider
+}
 
-    LOG_P(PSTR("Car voltage: %d mV (RAW=%d)\n"), u16CarVoltage, u16ADCVal);
+void ADC_vPrintCarVoltage(void)
+{
+    LOG_P(PSTR("Car voltage ........................%d mV (RAW=%d)\n"), u16CarVoltage, u16ADCVal);
 }

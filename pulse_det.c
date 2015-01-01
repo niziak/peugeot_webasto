@@ -23,11 +23,23 @@
 #include "usart0.h"
 #include "tools.h"
 
+volatile uint16_t auiPeriods[MAX_PERIODS];
+volatile uint8_t  ucWriteIndex;
+
+/**
+ * Write zeros to pattern table
+ */
+void PD_vClearStoredPattern(void)
+{
+    ucWriteIndex = 0;
+    memset((uint16_t*)&(auiPeriods[0]), 0, sizeof(auiPeriods));
+}
+
 /**
  * Disable watchdog, and go to power down mode (only external INT can wake-up)
  *
  */
-void vWaitForNextSeries(void)
+void PD_vWaitForNextSeries(void)
 {
     //USART0_vRXWaitForLine(); // RX led is on without this
     TIMER1_vStop();
@@ -60,7 +72,7 @@ void vWaitForNextSeries(void)
 }
 
 
-BOOL bAnalyzeCollectedPulses(void)
+BOOL PD_bAnalyzeCollectedPulses(void)
 {
 
         uint8_t uiCollectedIndex, uiExpectedIndex;

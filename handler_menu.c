@@ -63,13 +63,20 @@ int16_t s16GetIntFromString(uint8_t *pu8String)
     return atoi((const char*)pu8String); //TODO sth better
 }
 
+
 static void vShowStatus(void)
 {
     LOG_NL;
     LOG_P(PSTR("=== STATUS ===\n"));
+
+    TEMP_vPrintCalibrationData();
     TEMP_vCalculateCalibration();
+
     TEMP_vReadTemperature();
+    TEMP_vPrintTemperature();
+
     ADC_vGetCarVoltage();
+    ADC_vPrintCarVoltage();
 
         //uint16_t                    auiExpectedPeriodsMS[MAX_PERIODS];
     LOG_P(PSTR("Heater is ..........................%s\n"), WEBASTO_STATE_GET_STR);
@@ -164,10 +171,11 @@ void MENU_vHandleEvent(EVENT_DEF eEvent)
                             LOG_P(PSTR("\n"));
                             TEMP_vCalculateCalibration();
                             TEMP_vReadTemperature();
+                            TEMP_vPrintTemperature();
                             break;
 
                         case '4':
-                            vWaitForNextSeries();
+                            PD_vWaitForNextSeries();
                             break;
 
                         case '5':

@@ -42,21 +42,20 @@ static int16_t s16CalcGain100 (TEMP_CAL_DEF *pstP2, int16_t s16Offset)
 
 void TEMP_vPrintCalibrationData(void)
 {
-    LOG_P(PSTR("Temperature sensor calibration points:\n"));
     for (uint8_t i=0; i<TEMP_CALIB_POINTS; i++)
     {
-        LOG_P(PSTR("\t#%d RAW=%3d   REAL=%2d\n"), i, pstSettings->astTempCal[i].s16ADCTemp,
-                                                     pstSettings->astTempCal[i].s8RealTemp   );
+        LOG_P(PSTR("Temperature sensor calibrated at ...%2d C   (RAW= %2d)\n"),
+                pstSettings->astTempCal[i].s8RealTemp,
+                pstSettings->astTempCal[i].s16ADCTemp );
     }
 }
 
 void TEMP_vCalculateCalibration(void)
 {
-    TEMP_vPrintCalibrationData();
     s16Offset  = s16CalcOffset  (&pstSettings->astTempCal[0], &pstSettings->astTempCal[1]);
     s16Gain100 = s16CalcGain100 (&pstSettings->astTempCal[1], s16Offset);
 
-    LOG_P(PSTR("Calibration offset=%d gain=%d/100\n"), s16Offset, s16Gain100);
+    LOG_P(PSTR("Temp sensor offset .................%d, gain= %d/100\n"), s16Offset, s16Gain100);
 }
 
 
@@ -70,10 +69,11 @@ void TEMP_vReadTemperature(void)
     s16Temperature -= TEMP_SENS_OFFSET;
     s16Temperature *= TEMP_SENS_GAIN_100;
     s16Temperature /= 100;
-
-    LOG_P(PSTR("Temperature: %d (RAW=%d)\n"), s16Temperature, u16ADCVal);
 }
 
 
-
+void TEMP_vPrintTemperature(void)
+{
+    LOG_P(PSTR("Temperature ........................%d (RAW=%d)\n"), s16Temperature, u16ADCVal);
+}
 
