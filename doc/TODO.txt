@@ -27,10 +27,35 @@ Hardware:
    
 Hardware - power consumption:   
  - Max input voltage for Arduino Nano clone is 15V, 7805 is needed
- - reduce current - change 7805 to LDO
-    - LP2950CZ - LDO 100mA - Extremely Low Quiescent Current
-    - LM2936-5.0 - LDO 50mA
-	- LM2937     - LDO 500mA
+ - "Quiescent Current" - current when no load 
+ - reduce current:
+      Classic regulators:
+       - LM117/317 (+40V I-O diff, adjustment pin current 50-100uA, requires a minium load of 10mA) Min load current 3,5mA.
+                   More modern than 7805. Not requiring string reference voltage (like resistor divider in 7805).
+                   Adjustment pin current is returned to output, so it is not changed into heat. So minimum output current is required.
+                   If not, voltage can rise.
+                   
+                   "LM317 z opornikami 1% bêdzie mia³ lepsze parametry (stabilnoœæ od temperatury, od Uwe, od Iwy) od ka¿dego LM78xx. "
+       
+       - 7805 (Bias current 4.5-6mA) to
+        
+      LDOs:
+       - AMS1117     LM1117 1A (Arduino nano). Max In=15V max dropout =1.2V. Quiescent Current = 11mA. Adjust pin current 55-120uA
+       - LP2950CZ    100mA - Extremely Low Quiescent Current
+       - LM2936-5.0  50mA
+	   - LM2937      500mA Queiescent current 10,20mA
+	   - LM2940      1A    Queiescent current 15,60mA
+	   - LD1086      1,5A - max drop out 1.2V, adjust pin current 60-120uA
+	  !- FAN2500     CMOS 100mA, 25uA ground current, 100 mV Dropout Voltage at 100 mA 
+	  !- MAX666CPA   CMOS Quiescent 12uA. Vin = 2-16,5V. Iout=40mA
+	   - ICL7663
+	   - LP2985      16V max 150mA micropower (16V max) I=150mA Iq=1,5mA I=50mA Iq=0,6mA  I=10mA Iq=0,2mA
+	        
+      Step-down:
+       - CS5171        Boost Regulator, Positive, 1.5 A, 280 kHz, Shut Down Current: 50 uA Maximum, operating current 8mA max      
+       - D24V3F5    (Vin = 40V, 300mA, Vout=5V) Maximum quiescent current:  2 mA. While enabled (SHDN = HIGH) with no load. 
+                    Current draw is approximately 20 µA when SHDN = LOW.
+	
  - reduce power consumption - don't use Arduino board or use with external
    voltage regulator and disconnected power led
  - reduce power consumption - voltage dividers like (1M/470k) (1M/100k) + 100nF, or use N-MOSFET to switch on power supply during measure
