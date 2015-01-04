@@ -31,7 +31,7 @@
 
 #define TIMER1_TICK_US                  64      ///< One T1 count = 64us
 
-#define MAX_PERIODS                     30      ///< how many periods store (positive and negative state lengths)
+#define MAX_PERIODS                     110     ///< how many periods store (positive and negative state lengths)
 
 #define TEMP_CALIB_POINTS               2       ///< has to be 2!
 #define MENU_COUNTDOWN                  3

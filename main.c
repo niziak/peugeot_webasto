@@ -41,6 +41,8 @@ void vGetOptibootMCUSR(void)
 void main(void) __attribute__ ((noreturn));
 void main(void)
 {
+//    SimulationLoop();
+
     WdtEnable();
     MCUSR |= _BV(PUD); // disable all pull-ups
     // after power up, all ports are tri-state: DDR=0 PORT=0
@@ -95,7 +97,6 @@ void main(void)
 
     TEMP_vCalculateCalibration();
 
-    //SimulationLoop();
     eState = ST_CHECK_FOR_MENU_ENTER;
     eHandler = HND_STARTUP;
 
