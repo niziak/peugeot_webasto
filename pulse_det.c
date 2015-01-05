@@ -14,6 +14,7 @@
 #include <util/atomic.h>
 
 #include <stdio.h>
+#include <string.h>
 
 #include "config.h"
 #include "timer0.h"
@@ -23,7 +24,7 @@
 #include "usart0.h"
 #include "tools.h"
 
-volatile uint16_t auiPeriods[MAX_PERIODS];
+uint16_t auiPeriods[MAX_PERIODS];
 volatile uint8_t  ucWriteIndex;
 
 /**
@@ -71,8 +72,28 @@ void PD_vWaitForNextSeries(void)
     //USART0_RXDisable();
 }
 
+#define BAR_GRAPH_WIDTH 20
+#define BAR_GRAPH_MAX_VALUE (stSettings.u16IdleWhenNoPulsesMs)
 
-BOOL PD_bAnalyzeCollectedPulses(void)
+static void vShowBarGraph (uint16_t u16Value)
+{
+    // show graph
+    LOG_P(PSTR("["));
+    for (uint8_t i=0; i<BAR_GRAPH_WIDTH; i++)
+    {
+        if ( (i * BAR_GRAPH_MAX_VALUE / BAR_GRAPH_WIDTH) < u16Value)
+        {
+            LOG_P(PSTR("#"));
+        }
+        else
+        {
+            LOG_P(PSTR(" "));
+        }
+    }
+    LOG_P(PSTR("]"));
+}
+
+BOOL PD_bAnalyzeCollectedPulses(BOOL bCompare)
 {
 
         uint8_t uiCollectedIndex, uiExpectedIndex;
@@ -84,41 +105,54 @@ BOOL PD_bAnalyzeCollectedPulses(void)
         for (uiCollectedIndex=0; uiCollectedIndex < MAX_PERIODS; uiCollectedIndex++)
         {
             uint32_t uiPeriodMS = (uint32_t)auiPeriods[uiCollectedIndex] * (uint32_t)TIMER1_TICK_US / (uint32_t)1000;
-            LOG_P(PSTR("#%03d got %5u ms"), uiCollectedIndex, uiPeriodMS);
-            LOG_P(PSTR("    wait for   "));
-            LOG_P(PSTR("%5u ms #%03d "), pstSettings->auiExpectedPeriodsMS[uiExpectedIndex], uiExpectedIndex);
+            LOG_P(PSTR("got [%03d] %5u ms"), uiCollectedIndex, uiPeriodMS);
+            LOG_P(PSTR("  wants  "));
+            LOG_P(PSTR("[%03d] %5u ms "), uiExpectedIndex, pstSettings->auiExpectedPeriodsMS[uiExpectedIndex]);
 
-            if (    (pstSettings->auiExpectedPeriodsMS[uiExpectedIndex] + pstSettings->u16PulseLenToleranceMs > uiPeriodMS)
-                 && (pstSettings->auiExpectedPeriodsMS[uiExpectedIndex] - pstSettings->u16PulseLenToleranceMs < uiPeriodMS) )
+            if (bCompare)
             {
-                bFirstMatched = TRUE;
-                bOK = TRUE;
-                LOG_P(PSTR("ok\n"));
-            }
-            else
-            // value not matched
-            {
-                if (bFirstMatched)
+                if (    (pstSettings->auiExpectedPeriodsMS[uiExpectedIndex] + pstSettings->u16PulseLenToleranceMs > uiPeriodMS)
+                     && (pstSettings->auiExpectedPeriodsMS[uiExpectedIndex] - pstSettings->u16PulseLenToleranceMs < uiPeriodMS) )
                 {
-                    // fail - sequence started, but value is not matched
-                    // if failed was not last (last entry = 0)
-                    if (pstSettings->auiExpectedPeriodsMS[uiExpectedIndex] >0)
-                    {
-                        bOK = FALSE;
-                        LOG_P(PSTR("NOK"));
-                    }
-                    LOG_vNL();
+                    bFirstMatched = TRUE;
+                    bOK = TRUE;
+                    LOG_P(PSTR("ok "));
                 }
                 else
+                // value not matched
                 {
-                    LOG_P(PSTR("\n"));
+                    if (bFirstMatched)
+                    {
+                        // fail - sequence started, but value is not matched
+                        // if failed was not last (last entry = 0)
+                        if (pstSettings->auiExpectedPeriodsMS[uiExpectedIndex] >0)
+                        {
+                            bOK = FALSE;
+                            LOG_P(PSTR("NOK"));
+                        }
+                    }
+                    else
+                    {
+                        LOG_P(PSTR("   "));
+                    }
                 }
-            }
 
-            if (bFirstMatched)
+                if (bFirstMatched)
+                {
+                    uiExpectedIndex++;
+                }
+
+            } // if bCompare
+
+            vShowBarGraph (uiPeriodMS);
+            LOG_P(PSTR(" "));
+            vShowBarGraph (pstSettings->auiExpectedPeriodsMS[uiExpectedIndex]);
+
+            if (bCompare == FALSE)
             {
                 uiExpectedIndex++;
             }
+            LOG_NL;
 
 //            if (bFailed)
 //            {

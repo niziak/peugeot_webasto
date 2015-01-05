@@ -55,7 +55,7 @@ void TEMP_vCalculateCalibration(void)
     s16Offset  = s16CalcOffset  (&pstSettings->astTempCal[0], &pstSettings->astTempCal[1]);
     s16Gain100 = s16CalcGain100 (&pstSettings->astTempCal[1], s16Offset);
 
-    LOG_P(PSTR("Temp sensor offset .................%d, gain= %d/100\n"), s16Offset, s16Gain100);
+    LOG_P(PSTR("Temp sensor offset .................%d, gain %d/100\n"), s16Offset, s16Gain100);
 }
 
 

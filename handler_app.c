@@ -21,10 +21,8 @@
 #include <stdio.h>
 #include "usart0.h"
 #include "adc.h"
-//#include "timer1.h"
-
-#define PIN_CHANGE_INT_ENABLE       { PCICR  |=   _BV(PCIE0); PCMSK0 |=   _BV(PCINT0); }
-#define PIN_CHANGE_INT_DISABLE      { PCICR  &= ~ _BV(PCIE0); PCMSK0 &= ~ _BV(PCINT0); }
+#include "timer1.h"
+#include "handler_app.h"
 
 static volatile BOOL bSendPinChangeEvents = FALSE;
 /**
@@ -76,7 +74,7 @@ void APP_vHandleEvent(EVENT_DEF eEvent)
             case EV_CHECK_PATTERN: // send from Timer1
                 TIMER1_vStop();
                 PIN_CHANGE_INT_DISABLE
-                if (PD_bAnalyzeCollectedPulses())
+                if (PD_bAnalyzeCollectedPulses(TRUE))
                 {
                     EventPost(EV_GOOD_PATTERN);
                 }
@@ -147,7 +145,7 @@ void APP_vHandleEvent(EVENT_DEF eEvent)
                 }
                 break;
 
-            case EV_PULSE_TOO_LONG:
+            case EV_PULSE_TOO_LONG: // From T1 OVF or T0 Idle time reached
                 LOG_P(PSTR("Last pulse too long.\n"));
                 EventPost(EV_CHECK_PATTERN);
                 break;

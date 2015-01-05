@@ -11,6 +11,9 @@
 extern void APP_vHandleEvent(EVENT_DEF eEvent);
 extern void APP_vEnablePinChangeEvents(void);
 
+#define PIN_CHANGE_INT_ENABLE       { PCICR  |=   _BV(PCIE0); PCMSK0 |=   _BV(PCINT0); }
+#define PIN_CHANGE_INT_DISABLE      { PCICR  &= ~ _BV(PCIE0); PCMSK0 &= ~ _BV(PCINT0); }
+
 
 
 #endif /* HANDLER_APP_H_ */

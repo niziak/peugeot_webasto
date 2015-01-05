@@ -44,7 +44,7 @@
  * Timeout without PIN change interrupt (no pulses received)
  * NOTE: Also Timer1 overflow is used for maximum pulse time or idle time (4.19 second)
  */
-#define IDLE_WHEN_NO_PULSES_MS          2000     ///< maximum pulse time in ms (max 4000!)
+#define IDLE_WHEN_NO_PULSES_MS          1000     ///< maximum pulse time in ms (max 4000!)
 #define PULSE_LEN_TOLERANCE_MS          50       ///< maximum pulse length difference (plus/ minux)
 #define HEATER_ENABLED_FOR_MIN          15       ///< 15 minutes
 #define HEATER_ENABLED_MAX_TEMPERATURE  15       ///< in Celsius

@@ -11,5 +11,6 @@
 
 extern BOOL MENU_bCheckEnterSequence(void);
 extern void MENU_vHandleEvent(EVENT_DEF eEvent);
+extern void MENU_vShowMainMenu(void);
 
 #endif /* HANDLER_MENU_H_ */

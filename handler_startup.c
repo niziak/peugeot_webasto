@@ -19,6 +19,7 @@
 #include "pulse_det.h"
 #include <stdio.h>
 #include "usart0.h"
+#include "handler_menu.h"
 
 void STARTUP_vHandleEvent(EVENT_DEF eEvent)
 {
@@ -48,8 +49,7 @@ void STARTUP_vHandleEvent(EVENT_DEF eEvent)
                            }
                            else
                            {
-                               eHandler = HND_MENU;
-                               EventPost(EV_SHOW_MAIN_MENU);
+                               MENU_vShowMainMenu();
                            }
                            break;
 

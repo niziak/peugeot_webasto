@@ -74,6 +74,7 @@ typedef enum
     ST_CHECK_FOR_2ND_CR,
 
     ST_MENU_SHOW_MAIN,
+    ST_MENU_WAIT_FOR_PATTERN,
 
 } APP_ST_DEF;
 

@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <avr/io.h>
 #include <avr/wdt.h>
@@ -25,32 +26,7 @@
 #include "pulse_det.h"
 #include "handler_app.h"
 #include "adc.h"
-
-
-void TEMP_vReadCalibrationDataFromConsole(void)
-{
-    TEMP_vPrintCalibrationData();
-    int status;
-
-    for (uint8_t i=0; i<TEMP_CALIB_POINTS; i++)
-    {
-        LOG_NL;
-        do
-        {
-            LOG_P(PSTR("\t#%d new RAW="),i );
-            status = scanf("%d", &pstSettings->astTempCal[i].s16ADCTemp);
-            LOG_P(PSTR("Scanf returns %d value is %d\n"), status, pstSettings->astTempCal[i].s16ADCTemp);
-            if (status !=1 )
-            {
-                LOG_P(PSTR("consumed char=0x%02X\n"), getchar());
-            }
-        } while (status != 1);
-        _delay_ms(5000);
-        LOG_P(PSTR("\t#%d new   T="),i ); status = scanf("%d", &pstSettings->astTempCal[i].s8RealTemp);
-        LOG_P(PSTR("Scanf returns %d value is %d\n"), status, pstSettings->astTempCal[i].s8RealTemp);
-    }
-    LOG_NL;
-}
+#include "handler_app.h"
 
 int16_t s16GetIntFromString(uint8_t *pu8String)
 {
@@ -69,26 +45,30 @@ static void vShowStatus(void)
     LOG_NL;
     LOG_P(PSTR("=== STATUS ===\n"));
 
-    TEMP_vPrintCalibrationData();
-    TEMP_vCalculateCalibration();
-
-    TEMP_vReadTemperature();
-    TEMP_vPrintTemperature();
-
     ADC_vGetCarVoltage();
     ADC_vPrintCarVoltage();
 
+    //TEMP_vPrintCalibrationData();
+    TEMP_vCalculateCalibration();
+    TEMP_vReadTemperature();
+    TEMP_vPrintTemperature();
+
         //uint16_t                    auiExpectedPeriodsMS[MAX_PERIODS];
     LOG_P(PSTR("Heater is ..........................%s\n"), WEBASTO_STATE_GET_STR);
+    LOG_P(PSTR("Turning light is ...................%s\n"), (bit_is_set(PINB, PINB0)) ? "ON" : "OFF");
     LOG_NL;
     LOG_P(PSTR("=== SETTINGS ===\n"));
-    LOG_P(PSTR("A. Sleep when no pulses for ........%d ms\n"),  stSettings.u16IdleWhenNoPulsesMs);
-    LOG_P(PSTR("B. Pulse tolerance +/- .............%d ms\n"),  stSettings.u16PulseLenToleranceMs);
-    LOG_P(PSTR("C. Heater turn ON time .............%d min\n"), stSettings.u16HeaterEnabledForMin);
-    LOG_P(PSTR("D. Heater max ambient temp .........%d C\n"),   stSettings.s8HeaterEnableMaxTemperature);
-    LOG_P(PSTR("E. Voltage divider ratio ...........%d/100\n"), stSettings.u16VoltageDividerRatio);
-    LOG_P(PSTR("F. Voltage with engine .............%d mV\n"),  stSettings.u16VoltageWithEngine);
-    LOG_P(PSTR("G. Voltage minimum level ...........%d mV\n"),  stSettings.u16VoltageMinimumLevel);
+    LOG_P(PSTR("A. Sleep when no pulses for ........%d ms\n"),      stSettings.u16IdleWhenNoPulsesMs);
+    LOG_P(PSTR("B. Pulse tolerance +/- .............%d ms\n"),      stSettings.u16PulseLenToleranceMs);
+    LOG_P(PSTR("C. Heater turn ON time .............%d min\n"),     stSettings.u16HeaterEnabledForMin);
+    LOG_P(PSTR("D. Heater max ambient temp .........%d C\n"),       stSettings.s8HeaterEnableMaxTemperature);
+    LOG_P(PSTR("E. Voltage divider ratio ...........%d/100\n"),     stSettings.u16VoltageDividerRatio);
+    LOG_P(PSTR("F. Voltage with engine .............%d mV\n"),      stSettings.u16VoltageWithEngine);
+    LOG_P(PSTR("G. Voltage minimum level ...........%d mV\n"),      stSettings.u16VoltageMinimumLevel);
+    LOG_P(PSTR("H. #1 Temp. calibrated point .......%2d C\n"),      pstSettings->astTempCal[0].s8RealTemp);
+    LOG_P(PSTR("I. #1 Temp. calibrated point .......%2d RAW\n"),    pstSettings->astTempCal[0].s16ADCTemp);
+    LOG_P(PSTR("J. #2 Temp. calibrated point .......%2d C\n"),      pstSettings->astTempCal[1].s8RealTemp);
+    LOG_P(PSTR("K. #2 Temp. calibrated point .......%2d RAW\n"),    pstSettings->astTempCal[1].s16ADCTemp);
 }
 
 static void vShowMenu(void)
@@ -96,9 +76,10 @@ static void vShowMenu(void)
     LOG_P(PSTR("=== M E N U ===\n"));
     LOG_P(PSTR("1. Turn heater ON\n"));
     LOG_P(PSTR("2. Turn heater OFF\n"));
-    LOG_P(PSTR("3. New temperature calibration values\n"));
-    LOG_P(PSTR("4. New pulse pattern\n"));
-    LOG_P(PSTR("5. Show pulses\n"));
+    LOG_P(PSTR("3. Show line changes\n"));
+    LOG_P(PSTR("4. Pulse pattern - collect now\n"));
+    LOG_P(PSTR("5. Pulse pattern - show\n"));
+    LOG_P(PSTR("6. Pulse pattern - use collected\n"));
 //    LOG_P(PSTR("V. Turn VDIV ON\n"));
 //    LOG_P(PSTR("v. Turn VDIV OFF\n"));
     LOG_P(PSTR("S. Save settings\n"));
@@ -108,25 +89,49 @@ static void vShowMenu(void)
     LOG_P(PSTR("ENTER. refresh\n"));
 }
 
+#define MAX_COLUMNS 80
+static uint8_t u8Column;
+
+/**
+ * Set state of menu handler to @ref ST_MENU_SHOW_MAIN and generte event @ref EV_SHOW_MAIN_MENU
+ */
+void MENU_vShowMainMenu(void)
+{
+    eHandler = HND_MENU;
+    eState = ST_MENU_SHOW_MAIN;
+    EventPost(EV_SHOW_MAIN_MENU);
+}
 
 
 void MENU_vHandleEvent(EVENT_DEF eEvent)
 {
-    if (eEvent == EV_SHOW_MAIN_MENU) // Initialisation event
-    {
-        eState = ST_MENU_SHOW_MAIN;
-    }
     switch (eState)
     {
         default:
             RESET_P(PSTR("Unhandled state!"));
             break;
 
+        case ST_MENU_WAIT_FOR_PATTERN:
+            switch (eEvent)
+            {
+                case EV_CHECK_PATTERN: // send from Timer1
+                case EV_PULSE_TOO_LONG: // From T1 OVF or T0 Idle time reached
+                    LOG_P(PSTR("Collected!\n"));
+                    MENU_vShowMainMenu();
+                    break;
+
+                default:
+                case EV_CLOCK_1S:
+                    wdt_reset();
+                    break;
+            }
+            break;
+
         case ST_MENU_SHOW_MAIN:
             switch (eEvent)
             {
                 case EV_UART_LINE_COMPLETE:
-                    DEBUG_MEM(pu8GetLineBuf(), UART_RX_LINE_BUFFER);
+//                    DEBUG_MEM(pu8GetLineBuf(), UART_RX_LINE_BUFFER);
                     switch (*pu8GetLineBuf())
                     {
                         case 'A':
@@ -157,6 +162,22 @@ void MENU_vHandleEvent(EVENT_DEF eEvent)
                             stSettings.u16VoltageMinimumLevel = s16GetIntFromString(pu8GetLineBuf());
                             break;
 
+                        case 'H':
+                            pstSettings->astTempCal[0].s8RealTemp = s16GetIntFromString(pu8GetLineBuf());
+                            break;
+
+                        case 'I':
+                            pstSettings->astTempCal[0].s16ADCTemp = s16GetIntFromString(pu8GetLineBuf());
+                            break;
+
+                        case 'J':
+                            pstSettings->astTempCal[1].s8RealTemp = s16GetIntFromString(pu8GetLineBuf());
+                            break;
+
+                        case 'K':
+                            pstSettings->astTempCal[1].s16ADCTemp = s16GetIntFromString(pu8GetLineBuf());
+                            break;
+
                         case '1':
                             uiHeaterSwitchOffAfterS = 1;
                             LOG_P(PSTR("Heater is ON\n"));
@@ -168,18 +189,29 @@ void MENU_vHandleEvent(EVENT_DEF eEvent)
                             break;
 
                         case '3':
-                            LOG_P(PSTR("\n"));
-                            TEMP_vCalculateCalibration();
-                            TEMP_vReadTemperature();
-                            TEMP_vPrintTemperature();
+                            APP_vEnablePinChangeEvents();
+                            u8Column = 0;
                             break;
 
                         case '4':
+                            eState = ST_MENU_WAIT_FOR_PATTERN;
+                            PIN_CHANGE_INT_ENABLE
                             PD_vWaitForNextSeries();
                             break;
 
                         case '5':
-                            APP_vEnablePinChangeEvents();
+                            PD_bAnalyzeCollectedPulses(FALSE);
+                            break;
+
+                        case '6':
+                            {
+                                uint16_t uiCollectedIndex;
+                                for (uiCollectedIndex=0; uiCollectedIndex < MAX_PERIODS; uiCollectedIndex++)
+                                {
+                                    uint32_t uiPeriodMS = (uint32_t)auiPeriods[uiCollectedIndex] * (uint32_t)TIMER1_TICK_US / (uint32_t)1000;
+                                    pstSettings->auiExpectedPeriodsMS[uiCollectedIndex] = uiPeriodMS;
+                                }
+                            }
                             break;
 
 //                        case 'V':
@@ -229,11 +261,23 @@ void MENU_vHandleEvent(EVENT_DEF eEvent)
                     break;
 
                 case EV_PIN_CHANGED_L:
-                    LOG_P(PSTR(" 0\n"));
+                    LOG_P(PSTR("_"));
+                    u8Column++;
+                    if (u8Column == MAX_COLUMNS)
+                    {
+                        LOG_NL;
+                        u8Column = 0;
+                    }
                     break;
 
                 case EV_PIN_CHANGED_H:
-                    LOG_P(PSTR(" 1\n"));
+                    LOG_P(PSTR("#"));
+                    u8Column++;
+                    if (u8Column == MAX_COLUMNS)
+                    {
+                        LOG_NL;
+                        u8Column = 0;
+                    }
                     break;
 
                 case EV_CLOCK_1S:

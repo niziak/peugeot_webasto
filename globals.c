@@ -37,7 +37,7 @@ without prior written permission from Wojciech Nizinski\n";
 
 
 
-static const uint16_t auiExpectedPeriodsMS[MAX_PERIODS] =
+static const uint16_t auiExpectedPeriodsMS[MAX_PERIODS] PROGMEM =
 {
         /*  1 */     200, 100,
         /*  2 */     200, 100,
@@ -45,15 +45,60 @@ static const uint16_t auiExpectedPeriodsMS[MAX_PERIODS] =
         /*  4 */     200, 100,
         /*  5 */     200, 100,
         /*  6 */     200, 100,
-        /*  7 */     200, 100,
-        /*  8 */     200, 100,
-        /*  9 */     200, 100,
-        /* 10 */     200,
+        /*  7 */     100, 100,
+        /*  8 */     100, 100,
+        /*  9 */     100, 100,
+        /* 10 */     100, 100,
+
+        /*  1 */     1000, 100,
+        /*  2 */     1000, 100,
+        /*  3 */     1000, 100,
+        /*  4 */     100, 100,
+        /*  5 */     100, 100,
+        /*  6 */     100, 100,
+        /*  7 */     100, 100,
+        /*  8 */     100, 100,
+        /*  9 */     100, 100,
+        /* 10 */     100, 100,
+
+        /*  1 */     100, 100,
+        /*  2 */     100, 100,
+        /*  3 */     100, 100,
+        /*  4 */     100, 100,
+        /*  5 */     100, 100,
+        /*  6 */     100, 100,
+        /*  7 */     100, 100,
+        /*  8 */     100, 100,
+        /*  9 */     100, 100,
+        /* 10 */     100, 100,
+
+        /*  1 */     100, 100,
+        /*  2 */     100, 100,
+        /*  3 */     100, 100,
+        /*  4 */     100, 100,
+        /*  5 */     100, 100,
+        /*  6 */     100, 100,
+        /*  7 */     100, 100,
+        /*  8 */     100, 100,
+        /*  9 */     100, 100,
+        /* 10 */     100, 100,
+
+        /*  1 */     100, 100,
+        /*  2 */     100, 100,
+        /*  3 */     100, 100,
+        /*  4 */     100, 100,
+        /*  5 */     100, 100,
+        /*  6 */     100, 100,
+        /*  7 */     100, 100,
+        /*  8 */     100, 100,
+        /*  9 */     100, 100,
+        /* 10 */     100,
 };
 
 void NVM_vSetDefaultValues(void)
 {
-    memcpy (pstSettings->auiExpectedPeriodsMS, auiExpectedPeriodsMS, sizeof (auiExpectedPeriodsMS));
+    memcpy_P (pstSettings->auiExpectedPeriodsMS, auiExpectedPeriodsMS, MIN(sizeof(pstSettings->auiExpectedPeriodsMS),
+                                                                           sizeof (auiExpectedPeriodsMS)) );
 
     pstSettings->u16IdleWhenNoPulsesMs          = IDLE_WHEN_NO_PULSES_MS;
     pstSettings->u16PulseLenToleranceMs         = PULSE_LEN_TOLERANCE_MS;

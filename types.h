@@ -21,5 +21,6 @@ typedef     uint8_t           BOOL;
   #define NULL    0
 #endif
 
+#define MIN(a,b)        ((a)<(b)?(a):(b))
 
 #endif /* TYPES_H_ */

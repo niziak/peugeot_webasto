@@ -12,9 +12,9 @@
 
 extern void PD_vClearStoredPattern(void);
 extern void PD_vWaitForNextSeries(void);
-extern BOOL PD_bAnalyzeCollectedPulses(void);
+extern BOOL PD_bAnalyzeCollectedPulses(BOOL bShowOnly);
 
-extern volatile uint16_t auiPeriods[MAX_PERIODS];
+extern          uint16_t auiPeriods[MAX_PERIODS];
 extern volatile uint8_t  ucWriteIndex;
 
 #endif /* PULSE_DET_H_ */
