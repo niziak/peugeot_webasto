@@ -101,6 +101,9 @@ BOOL PD_bAnalyzeCollectedPulses(BOOL bCompare)
         BOOL bFirstMatched = FALSE;
         BOOL bOK = FALSE;
 
+        // skip zero length pulses in expected pattern
+        while (pstSettings->auiExpectedPeriodsMS[uiExpectedIndex++] == 0);
+
         LOG_P(PSTR("Analyzing pulses...\n"));
         for (uiCollectedIndex=0; uiCollectedIndex < MAX_PERIODS; uiCollectedIndex++)
         {
@@ -144,14 +147,15 @@ BOOL PD_bAnalyzeCollectedPulses(BOOL bCompare)
 
             } // if bCompare
 
-            vShowBarGraph (uiPeriodMS);
-            LOG_P(PSTR(" "));
-            vShowBarGraph (pstSettings->auiExpectedPeriodsMS[uiExpectedIndex]);
-
             if (bCompare == FALSE)
             {
                 uiExpectedIndex++;
             }
+
+            vShowBarGraph (uiPeriodMS);
+            LOG_P(PSTR(" "));
+            vShowBarGraph (pstSettings->auiExpectedPeriodsMS[uiExpectedIndex-1]);
+
             LOG_NL;
 
 //            if (bFailed)
