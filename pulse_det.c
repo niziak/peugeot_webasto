@@ -93,6 +93,14 @@ static void vShowBarGraph (uint16_t u16Value)
     LOG_P(PSTR("]"));
 }
 
+/**
+ * TESTS:
+ *  - saved pulses contains leading zero length pulses
+ *  - last pulse length is variable (car sleep mode?) - ignore last pulse
+ *
+ * @param bCompare
+ * @return
+ */
 BOOL PD_bAnalyzeCollectedPulses(BOOL bCompare)
 {
 
@@ -100,9 +108,24 @@ BOOL PD_bAnalyzeCollectedPulses(BOOL bCompare)
         uiExpectedIndex = 0;
         BOOL bFirstMatched = FALSE;
         BOOL bOK = FALSE;
+        uint8_t uiMatchedPulsesCount = 0;
+        uint8_t uiSavedPulsesCount = 0;
 
-        // skip zero length pulses in expected pattern
-        while (pstSettings->auiExpectedPeriodsMS[uiExpectedIndex++] == 0);
+        // calculate saved pulses (non zero pulses)
+        for (uint8_t i=0; i<MAX_PERIODS; i++)
+        {
+            if (pstSettings->auiExpectedPeriodsMS[i] > 0)
+                uiSavedPulsesCount++;
+        }
+
+        if (bCompare)
+        {
+            // skip zero length pulses in expected pattern
+            while (pstSettings->auiExpectedPeriodsMS[uiExpectedIndex] == 0)
+            {
+                uiExpectedIndex++;
+            }
+        }
 
         LOG_P(PSTR("Analyzing pulses...\n"));
         for (uiCollectedIndex=0; uiCollectedIndex < MAX_PERIODS; uiCollectedIndex++)
@@ -117,6 +140,7 @@ BOOL PD_bAnalyzeCollectedPulses(BOOL bCompare)
                 if (    (pstSettings->auiExpectedPeriodsMS[uiExpectedIndex] + pstSettings->u16PulseLenToleranceMs > uiPeriodMS)
                      && (pstSettings->auiExpectedPeriodsMS[uiExpectedIndex] - pstSettings->u16PulseLenToleranceMs < uiPeriodMS) )
                 {
+                    uiMatchedPulsesCount++;
                     bFirstMatched = TRUE;
                     bOK = TRUE;
                     LOG_P(PSTR("ok "));
@@ -162,6 +186,17 @@ BOOL PD_bAnalyzeCollectedPulses(BOOL bCompare)
 //            {
 //                break;
 //            }
+        }
+
+        LOG_P(PSTR("Matched pulses: %d, expected pulses: %d\n"), uiMatchedPulsesCount, uiSavedPulsesCount);
+        // check pulses count
+        if (bOK == FALSE)
+        {
+            if ( (uiSavedPulsesCount - 3) <= uiMatchedPulsesCount)
+            {
+                LOG_P(PSTR("Only one pulse wrong, accepting pattern!\n")); //TODO make configrable margin
+                bOK = TRUE;
+            }
         }
         return bOK;
 }

@@ -1,7 +1,11 @@
 Software:
  - voltage measurement to detect if engine is running and stop handling heater
-
+ - disable heater if button pressed second time
+ - store last reasons if heater was not turned on (global uptime timestamps?)
+ 
  - eeprom settings for pattern and temperature calibration
+ 
+ 
  
  
  - cunits for temp calibration offset and gain
@@ -35,7 +39,7 @@ Hardware - power consumption:
                    Adjustment pin current is returned to output, so it is not changed into heat. So minimum output current is required.
                    If not, voltage can rise.
                    
-                   "LM317 z opornikami 1% bêdzie mia³ lepsze parametry (stabilnoœæ od temperatury, od Uwe, od Iwy) od ka¿dego LM78xx. "
+                   "LM317 z opornikami 1% bï¿½dzie miaï¿½ lepsze parametry (stabilnoï¿½ï¿½ od temperatury, od Uwe, od Iwy) od kaï¿½dego LM78xx. "
        
        - 7805 (Bias current 4.5-6mA) to
         
@@ -54,7 +58,7 @@ Hardware - power consumption:
       Step-down:
        - CS5171        Boost Regulator, Positive, 1.5 A, 280 kHz, Shut Down Current: 50 uA Maximum, operating current 8mA max      
        - D24V3F5    (Vin = 40V, 300mA, Vout=5V) Maximum quiescent current:  2 mA. While enabled (SHDN = HIGH) with no load. 
-                    Current draw is approximately 20 µA when SHDN = LOW.
+                    Current draw is approximately 20 ï¿½A when SHDN = LOW.
 	
  - reduce power consumption - don't use Arduino board or use with external
    voltage regulator and disconnected power led
